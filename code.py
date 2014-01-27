@@ -110,7 +110,6 @@ class Accounts:
         h = h + html.getHTMLFooter()
         return h
         
-        
     def edit(self, id):
         """
             Page to allow editing of an existing account.
@@ -317,7 +316,7 @@ class Transactions:
             # Is this the first date we've displayed that's
             # after today? If so, display a separator before outputting
             # so we have a visual cue of where today is
-            if (displayedToday == False) & (t.date > datetime.date.today()):
+            if not displayedToday and t.date > datetime.date.today():
                 h.add("""
                             <tr>
                                 <td><hr color="red" size="1" noshade /></td>
@@ -600,10 +599,14 @@ conf = {
     }
 }
 
-port = 5000
-if len(sys.argv) > 1:
-    port = int(sys.argv[1])
-#cherrypy.server.socket_host = "0.0.0.0"
-cherrypy.server.socket_port = port
-cherrypy.quickstart(root, config = conf)
+if __name__ == "__main__":
+    port = 5000
+    if len(sys.argv) > 1:
+        try:
+            port = int(sys.argv[1])
+        except:
+            pass
+    #cherrypy.server.socket_host = "0.0.0.0"
+    cherrypy.server.socket_port = port
+    cherrypy.quickstart(root, config = conf)
 

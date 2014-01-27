@@ -1,0 +1,40 @@
+#!/bin/sh
+# /etc/init.d/fb
+### BEGIN INIT INFO
+# Provides:          fb
+# Required-Start:    $syslog
+# Required-Stop:     $syslog
+# Should-Start:      $network
+# Should-Stop:       $network
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start and stop the fb server daemon
+# Description:       Controls the main fb server daemon
+### END INIT INFO
+DAEMON=/usr/bin/env
+WD=/usr/local/lib/fb
+ARGS="python $WD/code.py 8190"
+PIDFILE="/var/run/fb.pid"
+RUNAS=nobody
+. /lib/lsb/init-functions
+case "$1" in
+  start)
+    echo "Starting fb ..." >&2
+    /sbin/start-stop-daemon --start --pidfile $PIDFILE --chuid $RUNAS --chdir $WD -b --make-pidfile --exec $DAEMON $ARGS &> /var/log/fb.log
+    ;;
+  stop)
+    echo "Stopping fb ..." >&2
+    /sbin/start-stop-daemon --stop --pidfile $PIDFILE --verbose
+    ;;
+  restart)
+    echo "Restarting fb ..." >&2
+    /sbin/start-stop-daemon --stop --pidfile $PIDFILE --verbose
+    /sbin/start-stop-daemon --start --pidfile $PIDFILE --chuid $RUNAS --chdir $WD -b --make-pidfile --exec $DAEMON $ARGS &> /var/log/fb.log
+    ;;
+  *)
+    echo "Usage: /etc/init.d/fb {start|stop|restart}" >&2
+    exit 1
+    ;;
+esac
+exit 0
+

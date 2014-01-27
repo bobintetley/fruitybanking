@@ -57,8 +57,8 @@ def createTransaction(transactionObj):
 	Transaction object (ID is ignored and regenerated on the object)
     """
     # Get the next ID for the table
-    id = int(db.getId("trx"))
-    transactionObj.id = id
+    tid = int(db.getId("trx"))
+    transactionObj.id = tid
 
     isreconciled = 0
     if str(transactionObj.reconciled) == "on":
@@ -74,7 +74,7 @@ def createTransaction(transactionObj):
         destaccount = transactionObj.otheraccountid
         amount = transactionObj.withdrawal
         
-    s = "INSERT INTO trx (ID, Date, Description, Reconciled, Deleted, Amount, SourceAccountID, DestinationAccountID) VALUES ( " + str(id) + ", '" + str(int(toUnixDate(transactionObj.date))) + "', " + "'" + transactionObj.description + "', " + str(isreconciled) + ", 0, " + amount + ", " + sourceaccount + ", " + destaccount + ")"
+    s = "INSERT INTO trx (ID, Date, Description, Reconciled, Deleted, Amount, SourceAccountID, DestinationAccountID) VALUES ( " + str(tid) + ", '" + str(int(toUnixDate(transactionObj.date))) + "', " + "'" + transactionObj.description + "', " + str(isreconciled) + ", 0, " + amount + ", " + sourceaccount + ", " + destaccount + ")"
     db.executeQuery(s)
     
 def getTransactions(accountid, num):
@@ -182,7 +182,7 @@ def getCutOffDateForRows(accountid, num):
 
     # Return zero if there aren't any transactions for this account
     if len(d) == 0:
-        return 0
+        return 0.0
 	
     lastdate = d[len(d)-1][0]
     # Subtract a whole day

@@ -187,57 +187,56 @@ def createAccount(accountObj):
         Creates a new account record and returns
         the id value of the newly created account.
     """
-    id = db.getId("accounts")
-    db.executeQuery("INSERT INTO accounts (ID, Code, Description, Type, Deleted) VALUES (" + str(id) + ",'" + accountObj.code + "', '" + accountObj.description + "', " + accountObj.type + ",0)")    
+    aid = db.getId("accounts")
+    db.executeQuery("INSERT INTO accounts (ID, Code, Description, Type, Deleted) VALUES (" + str(aid) + ",'" + accountObj.code + "', '" + accountObj.description + "', " + accountObj.type + ",0)")    
     
 accounttypes = (
-                     ( 0, "Bank" ),
-                     ( 1, "Credit Card" ),
-                     ( 2, "Loan" ),
-                     ( 3, "Expense" ),
-                     ( 4, "Income" ),
-                     ( 5, "Pension" ),
-                     ( 6, "Shares" ),
-		     ( 10, "Asset" ),
-		     ( 11, "Liability" )
-                )
+    ( 0, "Bank" ),
+    ( 1, "Credit Card" ),
+    ( 2, "Loan" ),
+    ( 3, "Expense" ),
+    ( 4, "Income" ),
+    ( 5, "Pension" ),
+    ( 6, "Shares" ),
+	( 10, "Asset" ),
+    ( 11, "Liability" )
+)
 
 def totalBalanceForPeriod(dateto, accounttype):
-        """
-            Returns a list of lists up to a given date and account
-            type containing account codes and balances
-        """
-        udt = transactions.toUnixDate(dateto)
-        accs = []
-        d = db.runQuery("SELECT ID, Code FROM accounts WHERE Type = %s AND Deleted = 0" % str(accounttype))
-        for ar in d:
-            accs.append( [ ar[1], getAccountBalanceToDate(ar[0], udt) ] )
-        return accs
+    """
+        Returns a list of lists up to a given date and account
+        type containing account codes and balances
+    """
+    udt = transactions.toUnixDate(dateto)
+    accs = []
+    d = db.runQuery("SELECT ID, Code FROM accounts WHERE Type = %s AND Deleted = 0" % str(accounttype))
+    for ar in d:
+        accs.append( [ ar[1], getAccountBalanceToDate(ar[0], udt) ] )
+    return accs
 
 def totalForPeriod(datefrom, dateto, accounttype, deposits = False):
-	"""
+    """
 	    Returns a list of lists for a given period and account type.
 	    [ [ accountcode, value ],  [ accountcode, value ] ]
 	    If deposits is True, only includes transactions
 	    with the account appearing in the DestinationAccountID
-	"""
-	udf = transactions.toUnixDate(datefrom)
-	udt = transactions.toUnixDate(dateto)
-	accs = []
-	d = db.runQuery("SELECT ID, Code FROM accounts WHERE Type = %s AND Deleted = 0" % str(accounttype))
-	for ar in d:
-
-		if deposits == True:
-			dt = db.runQuery("SELECT SUM(Amount) FROM trx WHERE Date >= %s AND Date <= %s AND DestinationAccountID = %s AND Deleted=0" % ( udf, udt, ar[0] ))
-		else:
-			dt = db.runQuery("SELECT SUM(Amount) FROM trx WHERE Date >= %s AND Date <= %s AND SourceAccountID = %s AND Deleted=0" % ( udf, udt, ar[0] ))
-		dtotal = 0
-		if (len(dt) > 0):
-			dtotal = dt[0][0]
-		if dtotal == None:
-			dtotal = 0
-		accs.append( [ ar[1], dtotal ])
-	return accs
+    """
+    udf = transactions.toUnixDate(datefrom)
+    udt = transactions.toUnixDate(dateto)
+    accs = []
+    d = db.runQuery("SELECT ID, Code FROM accounts WHERE Type = %s AND Deleted = 0" % str(accounttype))
+    for ar in d:
+        if deposits:
+		    dt = db.runQuery("SELECT SUM(Amount) FROM trx WHERE Date >= %s AND Date <= %s AND DestinationAccountID = %s AND Deleted=0" % ( udf, udt, ar[0] ))
+        else:
+            dt = db.runQuery("SELECT SUM(Amount) FROM trx WHERE Date >= %s AND Date <= %s AND SourceAccountID = %s AND Deleted=0" % ( udf, udt, ar[0] ))
+        dtotal = 0
+        if (len(dt) > 0):
+            dtotal = dt[0][0]
+        if dtotal == None:
+            dtotal = 0
+        accs.append( [ ar[1], dtotal ])
+    return accs
 
 def deleteAccount(id):
     """
