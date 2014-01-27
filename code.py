@@ -554,7 +554,7 @@ class Reports:
 		<!--<option value="PAL">Profit and Loss</option>-->
 		</select>
 		<p><input type="submit" value="Prepare" /></p>
-		<p><a href="index.cgi">Back</a></p>
+		<p><a href="/index">Back</a></p>
 		</form>
 	      """ % (transactions.getToday(), transactions.getToday()))
        
