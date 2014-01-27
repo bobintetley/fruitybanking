@@ -1,0 +1,75 @@
+0.32
+========
+Redirect method to cope with some problems issuing 302 as just Location:
+Edit reconciled flag on transaction
+Added pension and shares types
+Added balance sheet report
+
+0.31
+========
+Javascript lookups to auto fill account for seen transaction descriptions
+
+0.30
+========
+10 Apr 2007
+CSS and presentation improvements (thanks to Eduardo Dominguez)
+
+0.29
+========
+23 Mar 2006
+Rewritten as CGI application and CherryPy scrapped
+
+0.28
+========
+7 Feb
+Income/Expenditure report
+Asset/liability account type for balance sheet reporting
+SQLite 2 is the default since it is available with PySQLite1 
+   in all distros (PySQLite2 not available in NetBSD for example)
+
+29 Jan
+PostgreSQL database schema
+SQLite 2 support
+NetBSD rc.d script
+
+0.27
+========
+14 Jan
+Reconcile upto today for account functionality added
+Calculates cutoff date for big accounts and uses DB to calculate
+   starting cumulative balance - gives a big speed boost when
+   viewing at 10/20/50/100 transactions on accounts with large
+   amounts of data.
+
+0.26
+========
+28 Oct
+Shows reconciled total balances on account summary
+
+0.25
+========
+22 Oct
+Uses SQLite3 exclusively to save confusion with distros that only
+   include 3
+Experimented with Psyco but binding to specific methods, using
+   profile() or full() had same effect - no speed increase and
+   RAM usage up by 800%
+
+0.24
+========
+15 Oct
+Uses UNIX dates in database instead of native types
+Now uses SQLite instead of MySQL (although MySQL still optional)
+
+0.23
+========
+17 Sep
+Facility to mark accounts as deleted
+Rounds off values to 2 dp
+Nicer colours on the account selection screen to demark accounts
+
+0.22
+========
+
+16 Jul
+Added view options to filter number of displayed transactions

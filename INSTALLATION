@@ -1,0 +1,7 @@
+Prerequisites:
+================================
+
+Fruity Banking requires Python (2.3+), CherryPy (3.x), SQLite (3.x) and PySQLite (2.x)
+
+SQL scripts are in static/sql
+
