@@ -39,7 +39,6 @@ def getAllAccounts():
         a.type = d[row][3]
         a.balance = getAccountBalance(a.id)
         a.reconciledtotal = getReconciled(a.id)
-        
         # Add this account to the list
         l.append(a)
     
@@ -57,6 +56,38 @@ def getAccountBalance(id):
         withdrawal = d[0][0]
     # Total deposits
     d = db.runQuery("SELECT SUM(Amount) FROM trx WHERE DestinationAccountID = %s AND Deleted = 0" % id)
+    deposit = 0
+    if (len(d) > 0):
+        deposit = d[0][0]
+    if deposit == None:
+        deposit = 0
+    if withdrawal == None:
+        withdrawal = 0
+    # Round off to 2 dp
+    deposit = round(deposit, 2)
+    withdrawal = round(withdrawal, 2)
+    # Produce the figure based on account type
+    atype = db.runQuery("SELECT Type FROM accounts WHERE ID=%s" % id)
+    t = int(atype[0][0]) 
+    # Income and expense accounts should always be positive, the others
+    # will be correct for deposit/withdrawal
+    if t == 3 or t == 4:
+        return abs(round(deposit - withdrawal, 2))
+    else:
+	return round(deposit - withdrawal, 2)
+
+def getAccountBalanceFromDate(id, fromdate):
+    """
+        Returns the balance for a given account from a certain date
+	    (fromdate is expected in UNIX form)
+    """
+    # Total withdrawals
+    d = db.runQuery("SELECT SUM(Amount) FROM trx WHERE SourceAccountID = %s AND Deleted = 0 AND Date >= %s" % (id, fromdate))
+    withdrawal = 0
+    if (len(d) > 0):
+        withdrawal = d[0][0]
+    # Total deposits
+    d = db.runQuery("SELECT SUM(Amount) FROM trx WHERE DestinationAccountID = %s AND Deleted = 0 AND Date >= %s" % (id, fromdate))
     deposit = 0
     if (len(d) > 0):
         deposit = d[0][0]
@@ -121,6 +152,38 @@ def getReconciled(id):
         withdrawal = d[0][0]
     # Total deposits
     d = db.runQuery("SELECT SUM(Amount) FROM trx WHERE DestinationAccountID = %s AND Reconciled = 1 AND Deleted = 0" % id)
+    deposit = 0
+    if (len(d) > 0):
+        deposit = d[0][0]
+    if deposit == None:
+        deposit = 0
+    if withdrawal == None:
+        withdrawal = 0
+    # Round off to 2 dp
+    deposit = round(deposit, 2)
+    withdrawal = round(withdrawal, 2)
+    # Produce the figure based on account type
+    atype = db.runQuery("SELECT Type FROM accounts WHERE ID=%s" % id)
+    t = int(atype[0][0]) 
+    # Income and expense accounts should always be positive, the others
+    # will be correct for deposit/withdrawal
+    if t == 3 or t == 4:
+        return abs(round(deposit - withdrawal, 2))
+    else:
+        return round(deposit - withdrawal, 2)
+
+def getReconciledFromDate(id, fromdate):
+    """
+        Returns the reconciled balance for the given account id and
+        based on the account type from a certain date.
+    """
+    # Total withdrawals
+    d = db.runQuery("SELECT SUM(Amount) FROM trx WHERE SourceAccountID = %s AND Reconciled = 1 AND Deleted = 0 AND Date >= %s" % (id, fromdate))
+    withdrawal = 0
+    if (len(d) > 0):
+        withdrawal = d[0][0]
+    # Total deposits
+    d = db.runQuery("SELECT SUM(Amount) FROM trx WHERE DestinationAccountID = %s AND Reconciled = 1 AND Deleted = 0 AND Date >= %s" % (id, fromdate))
     deposit = 0
     if (len(d) > 0):
         deposit = d[0][0]

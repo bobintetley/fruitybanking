@@ -1,3 +1,7 @@
+#!/usr/bin/env python
+
+import datetime, time
+
 version = "v1.02"
 copyyear = "2005-2014"
 
