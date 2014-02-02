@@ -9,6 +9,12 @@ import html
 import reports
 import transactions
 
+try:
+    from sitedefs import NAMED_PERIOD
+    period = "Income/expense totals shown for period: %s" % NAMED_PERIOD
+except:
+    period = ""
+
 class Accounts:
     """
         The UI class
@@ -26,9 +32,10 @@ class Accounts:
         h = h + """
             <h2>Accounts</h2>
                 <div id="menu"><ul id="nav">
+                <li>%s</li>
                 <li><img src="/static/plus.gif" /> <a href="/accounts/add" id="new-account">New Account</a></li>
                 <li><a href="/reports">Reports</a></li><li></li></ul></div>
-                <table width=100%>
+                <table width=100%%>
                   <thead>
                     <tr>
                         <th>Code</th>
@@ -40,7 +47,7 @@ class Accounts:
                     </tr>
                 </thead>
                 <tbody>
-            """
+            """ % period
             
         # Retrieve all the accounts
         acs = accounts.getAllAccounts()

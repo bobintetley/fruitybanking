@@ -5,6 +5,12 @@ import locale
 
 #locale.setlocale(locale.LC_ALL, 'en_US')
 
+try:
+    from sitedefs import ACCOUNTING_PERIOD
+    has_period = True
+except:
+    has_period = False
+
 def number_format(num, places=2):
     return locale.format("%.*f", (places, num), True)
 
@@ -37,8 +43,12 @@ def getAllAccounts():
         a.code = d[row][1]
         a.description = d[row][2]
         a.type = d[row][3]
-        a.balance = getAccountBalance(a.id)
-        a.reconciledtotal = getReconciled(a.id)
+        if has_period and a.type in (3, 4):
+            a.balance = getAccountBalanceFromDate(a.id, ACCOUNTING_PERIOD)
+            a.reconciledtotal = getReconciledFromDate(a.id, ACCOUNTING_PERIOD)
+        else:
+            a.balance = getAccountBalance(a.id)
+            a.reconciledtotal = getReconciled(a.id)
         # Add this account to the list
         l.append(a)
     
