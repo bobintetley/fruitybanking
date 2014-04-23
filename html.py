@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
-import datetime, time
-
-version = "v1.02"
+version = "v1.03"
 copyyear = "2005-2014"
 
 def getHTMLHeader(title):
@@ -14,6 +12,9 @@ def getHTMLHeader(title):
             <head>
             <title>FruityBanking - %s</title>
             <link rel="stylesheet" href="/static/style.css" />
+            <link type="text/css" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/themes/smoothness/jquery-ui.css" rel="stylesheet" />
+            <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+            <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
             </head>
             <body>            
 	    <img src="/static/fruity.png" align="right" />
@@ -33,6 +34,7 @@ def getHTMLFooter():
         """ % ( version, copyyear )
 
 from cStringIO import StringIO
+
 class StringBuilder:
 	def __init__(self):
 		self.buffer = StringIO()

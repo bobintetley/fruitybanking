@@ -6,6 +6,7 @@ import os, sys
 
 import accounts
 import html
+import json
 import reports
 import transactions
 
@@ -205,48 +206,46 @@ class Transactions:
     """
         UI class for transaction functionality
     """
-    def index(self, accountid, numToDisplay=20):
+    def index(self, accountid, datefrom="", dateto=""):
        
-        if (type(numToDisplay) is unicode): numToDisplay = int(numToDisplay)
     	h = html.StringBuilder()
+        d31 = datetime.timedelta(days = 31)
        
         h.add(html.getHTMLHeader("Transactions - %s" % accounts.getAccountById(accountid).code))
+
+        if dateto == "": 
+            dto = transactions.toUnixDate(datetime.datetime.today() + d31)
+            dateto = transactions.pythonToDisplayDate(datetime.datetime.today() + d31)
+        else:
+            dto = transactions.toUnixDate(transactions.displayToPythonDate(dateto))
+        if datefrom == "": 
+            dfrom = transactions.toUnixDate(datetime.datetime.today() - d31)
+            datefrom = transactions.pythonToDisplayDate(datetime.datetime.today() - d31)
+        else:
+            dfrom = transactions.toUnixDate(transactions.displayToPythonDate(datefrom))
         
-    	# Read how many we want to see from the session
-        # numToDisplay = getNumberOfTrxToShow() 
-	
         # Grab the transactions and balances for this account
-        trx = transactions.getTransactions(accountid, numToDisplay)
+        trx = transactions.getTransactions(accountid, dfrom, dto)
         
         h.add ("<h2>Transactions - %s</h2>" % accounts.getAccountById(accountid).code)
 
-        # Create the links to choose number of transactions
-        links = ""
-        if numToDisplay == 10:
-            links = links + "10 "
-        else:
-            links = links + """<a href="/transactions/index?numToDisplay=10&accountid=%s">10</a> """ % accountid
-        if numToDisplay == 20:
-            links = links + "20 "
-        else:
-            links = links + """<a href="/transactions/index?numToDisplay=20&accountid=%s">20</a> """ % accountid
-        if numToDisplay == 50:
-            links = links + "50 "
-        else:
-            links = links + """<a href="/transactions/index?numToDisplay=50&accountid=%s">50</a> """ % accountid
-        if numToDisplay == 100:
-            links = links + "100 "
-        else:
-            links = links + """<a href="/transactions/index?numToDisplay=100&accountid=%s">100</a> """ % accountid
-        if numToDisplay == -1:
-            links = links + "All "
-        else:
-            links = links + """<a href="/transactions/index?numToDisplay=-1&accountid=%s">All</a> """ % accountid
-        
         # Start table of transactions
         h.add("""
                 <hr />
-                <p>Show: %s</p>
+                <form action="/transactions/index" method="get">
+                <p>Transactions from: 
+                <input type="hidden" name="accountid" value="%s" />
+                <input id="datefrom" name="datefrom" size="12" value="%s" /> 
+                to <input id="dateto" name="dateto" size="12" value="%s" />
+                <input id="filterdate" type="submit" value="Show"/>
+                </p>
+                </form>
+                <script>
+                $(function() {
+                    $("#datebox, #datefrom, #dateto").datepicker({ dateFormat: "dd/mm/yy" });
+                    $("#filterdate").button();
+                });
+                </script>
                 <form name="form1" method="post" action="/transactions/new">
                 <table width="100%%">
                   <thead>
@@ -261,13 +260,7 @@ class Transactions:
                         <th></th>
                     </tr>
                   </thead>
-                """ % ( links ))
-        
-        # Calculate the range of the transactions we're actually going to display
-        if numToDisplay == -1: numToDisplay = len(trx)
-        rangestart = len(trx) - numToDisplay
-        if rangestart < 0: rangestart = 0
-        rangeend = len(trx)
+                """ % ( accountid, datefrom, dateto ))
         
         # Whether we've output a marker for today
         displayedToday = False
@@ -280,14 +273,17 @@ class Transactions:
         
         bgcolor = dark
         
-        # Javascript array of recent transaction descriptions and accounts
-        jscript = "accounts = new Array();\ndescriptions = new Array();\n"
-        ji = 0;
-        for i in range(rangestart, rangeend):
+        desctoaccount = {}
+        descs = []
+        for i in xrange(0, len(trx)):
             
             # Get the transaction
             t = trx[i]
-            
+           
+            # Map description to an account id
+            desctoaccount[t.description] = t.otheraccountid
+            descs.append(t.description)
+
             # Current colour
             if (bgcolor == dark): 
                 bgcolor = light
@@ -301,7 +297,7 @@ class Transactions:
             if (t.reconciled == 1):
                 outputreconciled = "R"
             else:
-                outputreconciled = "<a href='/transactions/reconcile?id=%s&accountid=%s&numtodisplay=%d'>N</a>" % (t.id, accountid, numToDisplay)
+                outputreconciled = "<a href='/transactions/reconcile?id=%s&accountid=%s'>N</a>" % (t.id, accountid)
                 
             # Substitute withdrawal/deposit for a blank if it's 0 to
             # make things easier to read
@@ -337,9 +333,15 @@ class Transactions:
                             </tr>
                         """)
                 displayedToday = True
+
+            # If we have a cancelling transaction (both sides the same)
+            # highlight the account to show the error
+            outputotheraccount = t.otheraccountcode
+            if t.otheraccountid == int(accountid):
+                outputotheraccount = "<span style='color: red'>%s</span>" % outputotheraccount
            
             # Output the transaction data
-            h .add("""
+            h.add("""
                     <tr class="%s">
                         <td>%s</td>
                         <td class="reconciled">%s</td>
@@ -353,45 +355,38 @@ class Transactions:
                             <a href="/transactions/delete?id=%s&accountid=%s"><img alt="Delete" title="Delete Transaction" border=0 src="/static/delete.png"/></a>
                         </td>
                     </tr>
-            """ % ( bgcolor, outputdate, outputreconciled, t.description, t.otheraccountcode, outputdeposit, outputwithdrawal, outputbalance, t.id, accountid, t.id, accountid ))
-	    jscript += "accounts[%d] = \"%s\";\ndescriptions[%d] = \"%s\";\n" % (ji, t.otheraccountid, ji, t.description)
-	    ji = ji + 1
+            """ % ( bgcolor, outputdate, outputreconciled, t.description, outputotheraccount, outputdeposit, outputwithdrawal, outputbalance, t.id, accountid, t.id, accountid ))
 
-        # Output the javascript array of transactions
-        h.add("""<script language="javascript">
-        %s
-        nodesc = %d;
-        function findaccount() {
-            accountbox = document.form1.otheraccount;
-            descriptionbox = document.form1.description;
-            for (i = 0; i < nodesc; i++) {
-                if (descriptions[i] == descriptionbox.value) {
-                    for (j = 0; j < accountbox.length; j++) {
-                        if (accountbox.options[j].value == accounts[i]) {
-                            accountbox.selectedIndex = j;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        </script>""" % (jscript, ji))
+        # When the description changes, see if we have an account code
+        h.add("""<script>
+              $(function() {
+                  var desctoaccount = %s;
+                  var descs = %s;
+                  $("input[name='description']").autocomplete({ source: descs }).blur(function() {
+                      var oa = desctoaccount[$("input[name='description']").val()];
+                      if (oa) {
+                          $("select[name='otheraccount']").val(oa);
+                      }
+                  });
+              });
+              </script>""" % (json.dumps(desctoaccount), json.dumps(descs)))
 
         # Output form for creating a new transaction on the
         # end of the list.
         h.add("""
                 <tr class=%s>
-                    <td><input name="numtodisplay" type="hidden" value="%d"/>
+                    <td><input name="datefrom" type="hidden" value="%s"/>
+                    <input name="dateto" type="hidden" value="%s"/>
                     <input id="datebox" name="date" size=10 value="%s"/></td>
                     <td><input name="reconciled" type="checkbox"/></td>
-                    <td><input name="description" onChange="javascript:findaccount()" /></td>
+                    <td><input name="description" /></td>
                     <td><input name="account" type="hidden" value="%s"/>
                         <select name="otheraccount">%s</select></td>
                     <td class="editmoney"><input name="deposit" size=4/></td>
                     <td class="editmoney"><input name="withdrawal" size=4/></td>
                     <td><input type="submit" value="submit"></td>
                 </tr>
-            """ % ( editcolour, numToDisplay, transactions.getToday(), accountid, accounts.getAccountsAsHTML() ))
+            """ % ( editcolour, datefrom, dateto, transactions.getToday(), accountid, accounts.getAccountsAsHTML() ))
         
         # Finish up
         h.add("</form></table>")
@@ -403,8 +398,9 @@ class Transactions:
         h.add("""
         <script type="text/javascript">
         window.scrollTo(0, document.body.scrollHeight);
-        var t  = document.getElementById("datebox" );
-        if (t !=null ) t.focus();
+        $(function() {
+            $("#datebox").focus();
+        });
         </script>
         """)
         
@@ -412,7 +408,7 @@ class Transactions:
         
         return h.get()
         
-    def new(self, date, reconciled = 0, description = "", account = 0, otheraccount = 0, deposit = 0, withdrawal = 0, numtodisplay = 20):
+    def new(self, date, reconciled = 0, description = "", account = 0, otheraccount = 0, deposit = 0, withdrawal = 0, datefrom = "", dateto = ""):
         """ 
             Called when a new transaction is submitted by the UI
         """
@@ -437,7 +433,7 @@ class Transactions:
         transactions.createTransaction(t)
         
         # Redirect back to the transaction screen
-        raise cherrypy.HTTPRedirect("/transactions/index?accountid=%s&numToDisplay=%d" % (account, int(numtodisplay)))
+        raise cherrypy.HTTPRedirect("/transactions/index?accountid=%s&datefrom=%s&dateto=%s" % (account, datefrom, dateto))
         
         
     def edit(self, id, accountid):
@@ -506,21 +502,12 @@ class Transactions:
         transactions.updateTransaction(t)
         raise cherrypy.HTTPRedirect("/transactions/index?accountid=%s" % accountid)
 
-    def showtrx(self, number, accountid):
-        """
-        UI page to change the number of transactions currently being
-        viewed.
-        """
-        transactions.setNumberOfTrxToShow(int(number))
-        raise cherrypy.HTTPRedirect("/transactions/index?accountid=%s" % accountid)
-    
-
-    def reconcile(self, id, accountid, numtodisplay):
+    def reconcile(self, id, accountid):
         """
             Marks a transaction as reconciled
         """
         transactions.markTransactionReconciled(id)
-        raise cherrypy.HTTPRedirect("/transactions/index?accountid=%s&numToDisplay=%d" % (accountid, int(numtodisplay)))
+        raise cherrypy.HTTPRedirect("/transactions/index?accountid=%s" % (accountid))
 
     def delete(self, id, accountid):
         """
@@ -533,7 +520,6 @@ class Transactions:
     new.exposed = True
     edit.exposed = True
     update.exposed = True
-    showtrx.exposed = True
     reconcile.exposed = True
     delete.exposed = True
 
