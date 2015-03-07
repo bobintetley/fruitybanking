@@ -242,7 +242,7 @@ class Transactions:
                 </form>
                 <script>
                 $(function() {
-                    $("#datebox, #datefrom, #dateto").datepicker({ dateFormat: "dd/mm/yy" });
+                    $("#datefrom, #dateto").datepicker({ dateFormat: "dd/mm/yy" });
                     $("#filterdate").button();
                 });
                 </script>

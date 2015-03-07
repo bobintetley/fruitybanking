@@ -6,10 +6,10 @@ compile:
 	rm -f *.pyc
 
 update:
-	rsync --exclude '*.pyc' -r * root@rawsoaa3.miniserver.com:/usr/local/lib/fb_banking/
-	rsync --exclude '*.pyc' -r * root@rawsoaa3.miniserver.com:/usr/local/lib/fb_accounts/
-	rsync --exclude '*.pyc' -r * root@rawsoaa3.miniserver.com:/usr/local/lib/fb_addy/
-	rsync --exclude '*.pyc' -r * root@rawsoaa3.miniserver.com:/usr/local/lib/fb_sole/
+	rsync --exclude '*.pyc' --exclude 'sitedefs.py' --exclude 'fruitybanking.db' -r * root@rawsoaa3.miniserver.com:/usr/local/lib/fb_banking/
+	rsync --exclude '*.pyc' --exclude 'sitedefs.py' --exclude 'fruitybanking.db' -r * root@rawsoaa3.miniserver.com:/usr/local/lib/fb_accounts/
+	rsync --exclude '*.pyc' --exclude 'sitedefs.py' --exclude 'fruitybanking.db' -r * root@rawsoaa3.miniserver.com:/usr/local/lib/fb_addy/
+	rsync --exclude '*.pyc' --exclude 'sitedefs.py' --exclude 'fruitybanking.db' -r * root@rawsoaa3.miniserver.com:/usr/local/lib/fb_sole/
 	ssh root@rawsoaa3.miniserver.com "/etc/init.d/fb_banking restart"
 	ssh root@rawsoaa3.miniserver.com "/etc/init.d/fb_accounts restart"
 	ssh root@rawsoaa3.miniserver.com "/etc/init.d/fb_addy restart"
