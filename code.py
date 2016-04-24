@@ -1,6 +1,5 @@
 #!/usr/bin/python
 
-import cherrypy
 import datetime
 import os, sys
 
@@ -9,18 +8,32 @@ import html
 import json
 import reports
 import transactions
+import web
 
-try:
-    from sitedefs import NAMED_PERIOD
-    period = "Income/expense totals shown for period: %s" % NAMED_PERIOD
-except:
-    period = ""
+PATH = os.path.dirname(os.path.abspath(__file__)) + os.sep
+sys.path.append(PATH)
 
-class Accounts:
-    """
-        The UI class
-    """
-    def index(self):
+urls = (
+    "/", "account",
+    "/index", "account",
+    "/account_add", "account_add",
+    "/account_reconcile", "account_reconcile",
+    "/account_edit", "account_edit",
+    "/account_delete", "account_delete",
+    "/transaction", "transaction",
+    "/transaction_add", "transaction_add",
+    "/transaction_reconcile", "transaction_reconcile", 
+    "/transaction_edit", "transaction_edit",
+    "/transaction_delete", "transaction_delete",
+    "/report", "report",
+    "/report_render", "report_render"
+)
+
+app = web.application(urls, globals())
+application = app.wsgifunc()
+
+class account:
+    def GET(self):
         """
             Index page of root.accounts - produces a list of all
             accounts with their codes, descriptions and balances
@@ -28,14 +41,19 @@ class Accounts:
         """
         # Get the header
         h = html.getHTMLHeader("Accounts")
-        
+        # Get an account period if one is set
+        try:
+            from sitedefs import NAMED_PERIOD
+            period = "Income/expense totals shown for period: %s" % NAMED_PERIOD
+        except:
+            period = ""
         # Header of account listings
         h = h + """
             <h2>Accounts</h2>
                 <div id="menu"><ul id="nav">
                 <li>%s</li>
-                <li><img src="/static/plus.gif" /> <a href="/accounts/add" id="new-account">New Account</a></li>
-                <li><a href="/reports">Reports</a></li><li></li></ul></div>
+                <li><img src="/static/plus.gif" /> <a href="account_add" id="new-account">New Account</a></li>
+                <li><a href="report">Reports</a></li><li></li></ul></div>
                 <table width=100%%>
                   <thead>
                     <tr>
@@ -68,12 +86,12 @@ class Accounts:
 	
             h = h + """
                 <tr class="%s">
-                    <td><a href="/transactions/index?accountid=%s">%s</a></td>
+                    <td><a href="transaction?accountid=%s">%s</a></td>
                     <td>%s</td>
                     <td>%s</td>
                     <td class="money">%s</td>
                     <td class="money">%s</td>
-                    <td align="right"><a href="/accounts/reconcile?id=%s"><img alt="Reconcile" title="Mark transactions upto today as reconciled" border=0 src="/static/reconcile.png"></a><a href="/accounts/edit?id=%s"><img alt="Edit" title="Edit Account" border=0 src="/static/edit.png"></a><a href="/accounts/delete?id=%s"><img alt="Delete" title="Delete Account" border=0 src="/static/delete.png"></a></td>
+                    <td align="right"><a href="account_reconcile?id=%s"><img alt="Reconcile" title="Mark transactions upto today as reconciled" border=0 src="/static/reconcile.png"></a><a href="account_edit?id=%s"><img alt="Edit" title="Edit Account" border=0 src="/static/edit.png"></a><a href="account_delete?id=%s"><img alt="Delete" title="Delete Account" border=0 src="/static/delete.png"></a></td>
                 </tr>
                 """ % (bgcolor, a.id, a.code, accounts.getAccountTypeForID(a.type), a.description, accounts.number_format(a.reconciledtotal), accounts.number_format(a.balance), a.id, a.id, a.id)
         # HTML footer
@@ -84,15 +102,16 @@ class Accounts:
         h = h + html.getHTMLFooter()
             
         return h
-    
-    def add(self):
+   
+class account_add:
+    def GET(self):
         """
             Page to allow adding of a new account
         """
         h = html.getHTMLHeader("New Account")
         h = h + """
                 <h2>New Account</h2>
-                <form id="form1" method="post" action="/accounts/new">
+                <form id="form1" method="post" action="account_add">
                 <table>
                     <tr>
                         <td>Code:</td>
@@ -117,19 +136,33 @@ class Accounts:
             """ % accounts.getAccountTypesAsHTML()
         h = h + html.getHTMLFooter()
         return h
-        
-    def edit(self, id):
+
+    def POST(self):
+        """
+            Page to create a new account
+        """
+        data = web.input()
+        a = accounts.Account()
+        a.code = data.code
+        a.description = data.description
+        a.type = data.type
+        accounts.createAccount(a)
+        raise web.seeother("index")
+
+class account_edit:
+    def GET(self):
         """
             Page to allow editing of an existing account.
         """
+        data = web.input(id = 0)
         # Grab the account
-        a = accounts.getAccountById(id)
+        a = accounts.getAccountById(data.id)
         # Build the HTML header
         h = html.getHTMLHeader("Edit Account %s (%s)" % (a.code, a.description))
         # Generate the form
         h = h + """
             <h2>Edit Account</h2>
-            <form id="form1" method="post" action="/accounts/update">
+            <form id="form1" method="post" action="account_edit">
             <table>
                 <tr>
                     <td>Code:</td>
@@ -156,63 +189,52 @@ class Accounts:
         h = h + html.getHTMLFooter()
         return h
 
-    def reconcile(self, id):
-        """
-    	Mark all transactions on an account as reconciled upto today's date.
-    	"""
-    	transactions.markAllTransactionsReconciled(id)
-        raise cherrypy.HTTPRedirect("/accounts/index")
-
-    def update(self, id, code, type, description):
+    def POST(self):
         """
         Page to update an account and then return to
         the index page and the accounts list.
         """
+        data = web.input()
         a = accounts.Account()
-        a.id = id
-        a.code = code
-        a.type = type
-        a.description = description
+        a.id = data.id
+        a.code = data.code
+        a.type = data.type
+        a.description = data.description
         accounts.updateAccount(a)
-        raise cherrypy.HTTPRedirect("/accounts/index")
+        raise web.seeother("index")
 
-    def delete(self, id):
+class account_reconcile:
+    def GET(self):
+        """
+    	Mark all transactions on an account as reconciled upto today's date.
+    	"""
+        data = web.input(id = 0)
+    	transactions.markAllTransactionsReconciled(data.id)
+        raise web.seeother("index")
+
+class account_delete:
+    def GET(self):
     	"""
 	    Mark an account as deleted and return to the account list
 	    """
-        accounts.deleteAccount(id)
-        raise cherrypy.HTTPRedirect("/accounts/index")
+        data = web.input(id = 0)
+        accounts.deleteAccount(data.id)
+        raise web.seeother("index")
 
-    def new(self, code, description, type):
+class transaction:
+    def GET(self):
         """
-            Page to create a new account
+            UI class for transaction functionality
         """
-        a = accounts.Account()
-        a.code = code
-        a.description = description
-        a.type = type
-        accounts.createAccount(a)
-        raise cherrypy.HTTPRedirect("/accounts/index")
-
-    index.exposed = True
-    add.exposed = True
-    edit.exposed = True
-    reconcile.exposed = True
-    update.exposed = True
-    delete.exposed = True
-    new.exposed = True
-
-class Transactions:
-    """
-        UI class for transaction functionality
-    """
-    def index(self, accountid, datefrom="", dateto=""):
-       
+        data = web.input(accountid = 0, dateto = "", datefrom = "")
+        accountid = data.accountid
     	h = html.StringBuilder()
         d31 = datetime.timedelta(days = 31)
        
         h.add(html.getHTMLHeader("Transactions - %s" % accounts.getAccountById(accountid).code))
 
+        dateto = data.dateto
+        datefrom = data.datefrom
         if dateto == "": 
             dto = transactions.toUnixDate(datetime.datetime.today() + d31)
             dateto = transactions.pythonToDisplayDate(datetime.datetime.today() + d31)
@@ -222,7 +244,7 @@ class Transactions:
             dfrom = transactions.toUnixDate(datetime.datetime.today() - d31)
             datefrom = transactions.pythonToDisplayDate(datetime.datetime.today() - d31)
         else:
-            dfrom = transactions.toUnixDate(transactions.displayToPythonDate(datefrom))
+            dfrom = transactions.toUnixDate(transactions.displayToPythonDate(data.datefrom))
         
         # Grab the transactions and balances for this account
         trx = transactions.getTransactions(accountid, dfrom, dto)
@@ -232,7 +254,7 @@ class Transactions:
         # Start table of transactions
         h.add("""
                 <hr />
-                <form action="/transactions/index" method="get">
+                <form action="transaction" method="get">
                 <p>Transactions from: 
                 <input type="hidden" name="accountid" value="%s" />
                 <input id="datefrom" name="datefrom" size="12" value="%s" /> 
@@ -246,7 +268,7 @@ class Transactions:
                     $("#filterdate").button();
                 });
                 </script>
-                <form name="form1" method="post" action="/transactions/new">
+                <form name="form1" method="post" action="transaction_add">
                 <table width="100%%">
                   <thead>
                     <tr>
@@ -260,7 +282,7 @@ class Transactions:
                         <th></th>
                     </tr>
                   </thead>
-                """ % ( accountid, datefrom, dateto ))
+                """ % ( accountid, data.datefrom, data.dateto ))
         
         # Whether we've output a marker for today
         displayedToday = False
@@ -297,7 +319,7 @@ class Transactions:
             if (t.reconciled == 1):
                 outputreconciled = "R"
             else:
-                outputreconciled = "<a href='/transactions/reconcile?id=%s&accountid=%s'>N</a>" % (t.id, accountid)
+                outputreconciled = "<a href='transaction_reconcile?id=%s&accountid=%s'>N</a>" % (t.id, accountid)
                 
             # Substitute withdrawal/deposit for a blank if it's 0 to
             # make things easier to read
@@ -351,8 +373,8 @@ class Transactions:
                         <td class="money">%s</td>
                         <td class="money">%s</td>
                         <td>
-                            <a href="/transactions/edit?id=%s&accountid=%s"><img alt="Edit" title="Edit Transaction" border=0 src="/static/edit.png"/></a>
-                            <a href="/transactions/delete?id=%s&accountid=%s"><img alt="Delete" title="Delete Transaction" border=0 src="/static/delete.png"/></a>
+                            <a href="transaction_edit?id=%s&accountid=%s"><img alt="Edit" title="Edit Transaction" border=0 src="/static/edit.png"/></a>
+                            <a href="transaction_delete?id=%s&accountid=%s"><img alt="Delete" title="Delete Transaction" border=0 src="/static/delete.png"/></a>
                         </td>
                     </tr>
             """ % ( bgcolor, outputdate, outputreconciled, t.description, outputotheraccount, outputdeposit, outputwithdrawal, outputbalance, t.id, accountid, t.id, accountid ))
@@ -391,7 +413,7 @@ class Transactions:
         # Finish up
         h.add("</form></table>")
         h.add("""
-            <p><a href="/index">Back</a></p>
+            <p><a href="index">Back</a></p>
             """)
 
         # Scroll to the bottom of the screen and set focus to the date
@@ -407,45 +429,48 @@ class Transactions:
         h.add(html.getHTMLFooter())
         
         return h.get()
-        
-    def new(self, date, reconciled = 0, description = "", account = 0, otheraccount = 0, deposit = 0, withdrawal = 0, datefrom = "", dateto = ""):
+       
+class transaction_add:
+    def POST(self):
         """ 
             Called when a new transaction is submitted by the UI
         """
+        data = web.input(reconciled = 0, date = "", description = "", account = 0, otheraccount = 0, deposit = 0, withdrawal = 0)
             
         # Create a new transaction object from data
         t = transactions.Transaction()
-        t.accountid = account
+        t.accountid = data.account
 
         # Convert user date entered to Python date for object
-        datebits = date.split("/")
+        datebits = data.date.split("/")
         t.date = datetime.date(int(datebits[2]), int(datebits[1]), int(datebits[0]))
     
-        t.reconciled = reconciled
-        t.description = description
-        t.otheraccountid = otheraccount
-        if deposit != "": 
-            t.deposit = deposit
-        if withdrawal != "":
-            t.withdrawal = withdrawal
+        t.reconciled = data.reconciled
+        t.description = data.description
+        t.otheraccountid = data.otheraccount
+        if data.deposit != "": 
+            t.deposit = data.deposit
+        if data.withdrawal != "":
+            t.withdrawal = data.withdrawal
         
         # Submit it for saving to the db
         transactions.createTransaction(t)
         
         # Redirect back to the transaction screen
-        raise cherrypy.HTTPRedirect("/transactions/index?accountid=%s&datefrom=%s&dateto=%s" % (account, datefrom, dateto))
+        raise web.seeother("transaction?accountid=%s&datefrom=%s&dateto=%s" % (data.account, data.datefrom, data.dateto))
         
-        
-    def edit(self, id, accountid):
+class transaction_edit:
+    def GET(self):
         """
             Screen to edit a transaction.
         """
-        t = transactions.getTransactionById(id, accountid)
+        data = web.input(id = 0, accountid = 0)
+        t = transactions.getTransactionById(data.id, data.accountid)
         outputdate = transactions.pythonToDisplayDate(t.date)
         h = html.getHTMLHeader("Edit Transaction")
         h = h + """
             <h2>Edit Transaction</h2>
-            <form action="/transactions/update" method="post">
+            <form action="transaction_edit" method="post">
             <table>
                 <tr>
                     <td>Date</td>
@@ -479,61 +504,57 @@ class Transactions:
                 </tr>
             </table>
             </form1>
-            """ % ( id, accountid, outputdate, t.description, accounts.getAccountsAsHTML(t.otheraccountid), t.deposit, t.withdrawal, transactions.getReconciledAsHTML(t.reconciled) )
+            """ % ( data.id, data.accountid, outputdate, t.description, accounts.getAccountsAsHTML(t.otheraccountid), t.deposit, t.withdrawal, transactions.getReconciledAsHTML(t.reconciled) )
         
         h = h + html.getHTMLFooter()    
         
         return h
 
-
-    def update(self, id, date, description, accountid, otheraccountid, deposit, withdrawal, reconciled):
+    def POST(self):
         """
         Fired when the user updates an existing transaction
         """
+        data = web.input(date = "", id = 0, description = "", accountid = 0, otheraccountid = 0, deposit = 0, withdrawal = 0, reconciled = 0)
         t = transactions.Transaction()
-        t.id = id 
-        t.date = transactions.displayToPythonDate(date)    
-        t.description = description
-        t.accountid = accountid
-        t.otheraccountid = otheraccountid
-        t.deposit = deposit
-        t.withdrawal = withdrawal
-        t.reconciled = reconciled
+        t.id = data.id 
+        t.date = transactions.displayToPythonDate(data.date)
+        t.description = data.description
+        t.accountid = data.accountid
+        t.otheraccountid = data.otheraccountid
+        t.deposit = data.deposit
+        t.withdrawal = data.withdrawal
+        t.reconciled = data.reconciled
         transactions.updateTransaction(t)
-        raise cherrypy.HTTPRedirect("/transactions/index?accountid=%s" % accountid)
+        raise web.seeother("transaction?accountid=%s" % data.accountid)
 
-    def reconcile(self, id, accountid):
+class transaction_reconcile:
+    def GET(self):
         """
             Marks a transaction as reconciled
         """
-        transactions.markTransactionReconciled(id)
-        raise cherrypy.HTTPRedirect("/transactions/index?accountid=%s" % (accountid))
+        data = web.input(id = 0)
+        transactions.markTransactionReconciled(data.id)
+        raise web.seeother("transaction?accountid=%s" % (data.accountid))
 
-    def delete(self, id, accountid):
+class transaction_delete:
+    def GET(self):
         """
             Deletes a transaction
         """
-        transactions.deleteTransaction(id)
-        raise cherrypy.HTTPRedirect("/transactions/index?accountid=%s" % accountid)
+        data = web.input(id = 0)
+        transactions.deleteTransaction(data.id)
+        raise web.seeother("transaction?accountid=%s" % data.accountid)
 
-    index.exposed = True
-    new.exposed = True
-    edit.exposed = True
-    update.exposed = True
-    reconcile.exposed = True
-    delete.exposed = True
-
-class Reports:
-    """
-        CherryPy UI class for reporting functionality
-    """
-    def index(self):
+class report:
+    def GET(self):
+        """
+            CherryPy UI class for reporting functionality
+        """
         h = html.StringBuilder()
-       
         h.add(html.getHTMLHeader("Reports"))
     	h.add("<h2>Reports</h2>");
     	h.add("""
-		<form action="/reports/render" method="post">
+		<form action="report_render" method="post">
 
 		<p>Between: 
 		<input name="datefrom" type="text" width="12" value="%s" /> 
@@ -547,59 +568,34 @@ class Reports:
 		<!--<option value="PAL">Profit and Loss</option>-->
 		</select>
 		<p><input type="submit" value="Prepare" /></p>
-		<p><a href="/index">Back</a></p>
+		<p><a href="index">Back</a></p>
 		</form>
 	      """ % (transactions.getToday(), transactions.getToday()))
        
         h.add(html.getHTMLFooter()) 
         return h.get()
 
-    def render(self, datefrom, dateto, report):
+class report_render:
+    def POST(self):
     	"""
     	Render the given report with a from/to date
     	"""
-            
+        data = web.input(datefrom = "", dateto = "", report = "")
         # Check dates
         try:
-            pyfrom = transactions.displayToPythonDate(datefrom)
-            pyto = transactions.displayToPythonDate(dateto)
+            pyfrom = transactions.displayToPythonDate(data.datefrom)
+            pyto = transactions.displayToPythonDate(data.dateto)
         except:
             return html.getHTMLHeader("Error") + "<p>Invalid date given.</p>" + html.getHTMLFooter()
 
-        if report == "INCEXP":
-            readabledate = datefrom + " - " + dateto
+        if data.report == "INCEXP":
+            readabledate = data.datefrom + " - " + data.dateto
             return reports.incomeExpenditure(pyfrom, pyto, readabledate)
-        if report == "BALSH":
-            readabledate = "to " + dateto
+        if data.report == "BALSH":
+            readabledate = "to " + data.dateto
             return reports.balanceSheet(pyto, readabledate)
 
-    index.exposed = True
-    render.exposed = True
-
-       
-root = Accounts()
-root.accounts = Accounts()
-root.reports = Reports()
-root.transactions = Transactions()
-
-conf = {
-    '/': {
-        'tools.staticdir.root': os.path.dirname(os.path.abspath(__file__))
-    },
-    '/static': {
-        'tools.staticdir.on': True,
-        'tools.staticdir.dir': "static"
-    }
-}
-
 if __name__ == "__main__":
-    port = 5000
-    if len(sys.argv) > 1:
-        try:
-            port = int(sys.argv[1])
-        except:
-            pass
-    #cherrypy.server.socket_host = "0.0.0.0"
-    cherrypy.server.socket_port = port
-    cherrypy.quickstart(root, config = conf)
+    app.run()
+
 

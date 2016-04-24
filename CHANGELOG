@@ -1,3 +1,11 @@
+201604
+========
+Rewrite to use web.py
+
+1.03
+========
+Move to sitedefs and allow an accounting period
+
 0.32
 ========
 Redirect method to cope with some problems issuing 302 as just Location:

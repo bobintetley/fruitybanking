@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-version = "v1.03"
-copyyear = "2005-2014"
+version = "v201604"
+copyyear = "2005-2016"
 
 def getHTMLHeader(title):
     """

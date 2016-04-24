@@ -7,7 +7,7 @@
 #mysql_db = "fruitybanking"
 
 # SQLite 3 DB ==========================
-from pysqlite2 import dbapi2 as sqlite
+import sqlite3
 # SQLite 2
 #import sqlite 
 
@@ -25,7 +25,7 @@ def getConnection():
     #return MySQLdb.connect(host=mysql_host, user=mysql_user, passwd=mysql_password, db=mysql_db )
     # SQLite
     #return PgSQL.connect(None, pg_user, pg_passwd, pg_host, "fruitybanking")
-    return sqlite.connect("fruitybanking.db")
+    return sqlite3.connect("fruitybanking.db", detect_types = sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES)
     
 def runQuery(sql):
     """
