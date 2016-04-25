@@ -1,22 +1,22 @@
 CREATE TABLE accounts (
-	ID INTEGER NOT NULL PRIMARY KEY,
-	Code VARCHAR(255) NOT NULL,
-	Description VARCHAR(255) NOT NULL,
-	Type TINYINT NOT NULL,
-	Deleted TINYINT NOT NULL
+	id INTEGER NOT NULL PRIMARY KEY,
+	code VARCHAR(255) NOT NULL,
+	description VARCHAR(255) NOT NULL,
+	type TINYINT NOT NULL,
+	deleted TINYINT NOT NULL
 );
-CREATE UNIQUE INDEX IX_AccountsCode ON accounts (Code);
+CREATE UNIQUE INDEX IX_AccountsCode ON accounts (code);
 
 CREATE TABLE trx (
-	ID INTEGER NOT NULL PRIMARY KEY,
-	Date LONG NOT NULL,
-	Description VARCHAR(255) NULL,
-	Reconciled TINYINT NOT NULL,
-	Deleted TINYINT NOT NULL,
-	Amount DOUBLE NOT NULL,
-	SourceAccountID INTEGER NOT NULL,
-	DestinationAccountID INTEGER NOT NULL
+	id INTEGER NOT NULL PRIMARY KEY,
+	date LONG NOT NULL,
+	description VARCHAR(255) NULL,
+	reconciled TINYINT NOT NULL,
+	deleted TINYINT NOT NULL,
+	amount DOUBLE NOT NULL,
+	sourceaccountid INTEGER NOT NULL,
+	destinationaccountid INTEGER NOT NULL
 );
-CREATE INDEX IX_trxSource ON trx (SourceAccountID);
-CREATE INDEX IX_trxDest ON trx (DestinationAccountID);
+CREATE INDEX IX_trxSource ON trx (sourceaccountid);
+CREATE INDEX IX_trxDest ON trx (destinationaccountid);
 

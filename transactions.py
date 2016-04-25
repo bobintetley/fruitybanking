@@ -102,7 +102,7 @@ def getTransactions(accountid, datefrom, dateto):
     l = []
     
     # Retrieve all the relevant transaction records
-    d = db.runQuery("SELECT ID, Date, Description, Reconciled, Amount, SourceAccountID, DestinationAccountID FROM trx WHERE Deleted = 0 AND Date >= %s AND Date <= %s AND (SourceAccountID=%s OR DestinationAccountID=%s) ORDER BY Date" % (datefrom, dateto, accountid, accountid))
+    d = db.runQuery("SELECT id, date, description, reconciled, amount, sourceaccountid, destinationaccountid FROM trx WHERE deleted = 0 AND date >= %s AND date <= %s AND (sourceaccountid=%s OR destinationaccountid=%s) ORDER BY date" % (datefrom, dateto, accountid, accountid))
 
     # Start the cumulative balance upto (but not including) the cut off date
     balance = accounts.getAccountBalanceToDate(accountid, datefrom)
@@ -176,26 +176,26 @@ def getTransactionById(transactionid, accountid):
         other account.
     """
 
-    d = db.runQuery("SELECT ID, Date, Description, Reconciled, Amount, SourceAccountID, DestinationAccountID FROM trx WHERE ID=%s" % transactionid)
+    d = db.runQuery("SELECT id, date, description, reconciled, amount, sourceaccountid, destinationaccountid FROM trx WHERE id=%s" % transactionid)
     t = Transaction()
     t.id = d[0].ID
     t.accountid = accountid
-    t.date = toPythonDate(d[0].Date)
-    t.description = d[0].Description
-    t.reconciled = d[0].Reconciled
+    t.date = toPythonDate(d[0].date)
+    t.description = d[0].description
+    t.reconciled = d[0].reconciled
     
     # If the account is the source, then it must be a
     # withdrawal and the dest account is the "other" account
-    if (int(d[0].SourceAccountID) == int(accountid)):
-        t.withdrawal = d[0].Amount
+    if (int(d[0].sourceaccountid) == int(accountid)):
+        t.withdrawal = d[0].amount
         t.deposit = 0
-        t.otheraccountid = d[0].DestinationAccountID
+        t.otheraccountid = d[0].destinationaccountid
         t.otheraccountcode = accounts.getAccountById(t.otheraccountid).code
     else:
         # It's a deposit and the source account is the "other" account
-        t.deposit = d[0].Amount
+        t.deposit = d[0].amount
         t.withdrawal = 0
-        t.otheraccountid = d[0].SourceAccountID
+        t.otheraccountid = d[0].sourceaccountid
         t.otheraccountcode = accounts.getAccountById(t.otheraccountid).code
         
     return t

@@ -32,17 +32,17 @@ def getAllAccounts():
     """
     
     # Retrieve all the account records
-    d = db.runQuery("SELECT ID, Code, Description, Type FROM accounts WHERE Deleted=0 ORDER BY Type, Code")
+    d = db.runQuery("SELECT id, code, description, type FROM accounts WHERE deleted=0 ORDER BY type, code")
     # Create the list we'll return
     l = []
     # Loop through the rows
     for row in d:
         
         a = Account()
-        a.id = row.ID
-        a.code = row.Code
-        a.description = row.Description
-        a.type = row.Type
+        a.id = row.id
+        a.code = row.code
+        a.description = row.description
+        a.type = row.type
         if has_period and a.type in (3, 4):
             a.balance = getAccountBalanceFromDate(a.id, ACCOUNTING_PERIOD)
             a.reconciledtotal = getReconciledFromDate(a.id, ACCOUNTING_PERIOD)
@@ -164,12 +164,12 @@ def getAccountById(id):
         Returns an account object for the given account id
     """
     # Retrieve it
-    d = db.runQuery("SELECT ID, Code, Description, Type FROM accounts WHERE ID = %s" % id)
+    d = db.runQuery("SELECT id, code, description, type FROM accounts WHERE id = %s" % id)
     a = Account()
-    a.id = d[0].ID
-    a.code = d[0].Code
-    a.description = d[0].Description
-    a.type = d[0].Type
+    a.id = d[0].id
+    a.code = d[0].code
+    a.description = d[0].description
+    a.type = d[0].type
     a.balance = getAccountBalance(a.id)
     a.reconciledtotal = getReconciled(a.id)
     return a
@@ -179,12 +179,12 @@ def getAccountByCode(code):
         Returns an account object for the given account code
     """
     # Retrieve it
-    d = db.runQuery("SELECT ID, Code, Description, Type FROM accounts WHERE Code = '%s'" % code)
+    d = db.runQuery("SELECT id, code, description, type FROM accounts WHERE code = '%s'" % code)
     a = Account()
-    a.id = d[0].ID
-    a.code = d[0].Code
-    a.description = d[0].Description
-    a.type = d[0].Type
+    a.id = d[0].id
+    a.code = d[0].code
+    a.description = d[0].description
+    a.type = d[0].type
     a.balance = getAccountBalance(a.id)
     a.reconciledtotal = getReconciled(a.id)
     return a
@@ -224,9 +224,9 @@ def totalBalanceForPeriod(dateto, accounttype):
     """
     udt = transactions.toUnixDate(dateto)
     accs = []
-    d = db.runQuery("SELECT ID, Code FROM accounts WHERE Type = %s AND Deleted = 0" % str(accounttype))
+    d = db.runQuery("SELECT id, code FROM accounts WHERE type = %s AND deleted = 0" % str(accounttype))
     for ar in d:
-        accs.append( [ ar.Code, getAccountBalanceToDate(ar.ID, udt) ] )
+        accs.append( [ ar.code, getAccountBalanceToDate(ar.id, udt) ] )
     return accs
 
 def totalForPeriod(datefrom, dateto, accounttype, deposits = False):
@@ -239,13 +239,13 @@ def totalForPeriod(datefrom, dateto, accounttype, deposits = False):
     udf = transactions.toUnixDate(datefrom)
     udt = transactions.toUnixDate(dateto)
     accs = []
-    d = db.runQuery("SELECT ID, Code FROM accounts WHERE Type = %s AND Deleted = 0" % str(accounttype))
+    d = db.runQuery("SELECT id, code FROM accounts WHERE type = %s AND deleted = 0" % str(accounttype))
     for ar in d:
         if deposits:
-		    dtotal = db.sumQuery("SELECT SUM(Amount) AS total FROM trx WHERE Date >= %s AND Date <= %s AND DestinationAccountID = %s AND Deleted=0" % ( udf, udt, ar.ID ))
+		    dtotal = db.sumQuery("SELECT SUM(Amount) AS total FROM trx WHERE Date >= %s AND Date <= %s AND DestinationAccountID = %s AND Deleted=0" % ( udf, udt, ar.id ))
         else:
-            dtotal = db.sumQuery("SELECT SUM(Amount) AS total FROM trx WHERE Date >= %s AND Date <= %s AND SourceAccountID = %s AND Deleted=0" % ( udf, udt, ar.ID ))
-        accs.append( [ ar.Code, dtotal ])
+            dtotal = db.sumQuery("SELECT SUM(Amount) AS total FROM trx WHERE Date >= %s AND Date <= %s AND SourceAccountID = %s AND Deleted=0" % ( udf, udt, ar.id ))
+        accs.append( [ ar.code, dtotal ])
     return accs
 
 def deleteAccount(id):
