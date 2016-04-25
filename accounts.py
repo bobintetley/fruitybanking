@@ -1,18 +1,12 @@
 #!/usr/bin/env python
 import db
 import transactions
-import locale
-
-#locale.setlocale(locale.LC_ALL, 'en_US')
 
 try:
     from sitedefs import ACCOUNTING_PERIOD
     has_period = True
 except:
     has_period = False
-
-def number_format(num, places=2):
-    return locale.format("%.*f", (places, num), True)
 
 class Account:
     """
@@ -63,17 +57,14 @@ def getAccountBalance(id):
     withdrawal = db.sumQuery("SELECT SUM(Amount) AS total FROM trx WHERE SourceAccountID = %s AND Deleted = 0" % id)
     # Total deposits
     deposit = db.sumQuery("SELECT SUM(Amount) AS total FROM trx WHERE DestinationAccountID = %s AND Deleted = 0" % id)
-    # Round off to 2 dp
-    deposit = round(deposit, 2)
-    withdrawal = round(withdrawal, 2)
     # Produce the figure based on account type
     t = db.first("SELECT Type AS first FROM accounts WHERE id=%s" % id)
     # Income and expense accounts should always be positive, the others
     # will be correct for deposit/withdrawal
     if t == 3 or t == 4:
-        return abs(round(deposit - withdrawal, 2))
+        return abs(deposit - withdrawal)
     else:
-	return round(deposit - withdrawal, 2)
+	return deposit - withdrawal
 
 def getAccountBalanceFromDate(id, fromdate):
     """
@@ -85,16 +76,16 @@ def getAccountBalanceFromDate(id, fromdate):
     # Total deposits
     deposit = db.sumQuery("SELECT SUM(Amount) AS total FROM trx WHERE DestinationAccountID = %s AND Deleted = 0 AND Date >= %s" % (id, fromdate))
     # Round off to 2 dp
-    deposit = round(deposit, 2)
-    withdrawal = round(withdrawal, 2)
+    deposit = deposit
+    withdrawal = withdrawal
     # Produce the figure based on account type
     t = db.first("SELECT Type AS first FROM accounts WHERE id=%s" % id)
     # Income and expense accounts should always be positive, the others
     # will be correct for deposit/withdrawal
     if t == 3 or t == 4:
-        return abs(round(deposit - withdrawal, 2))
+        return abs(deposit - withdrawal)
     else:
-	return round(deposit - withdrawal, 2)
+	return deposit - withdrawal
 
 def getAccountBalanceToDate(id, todate):
     """
@@ -105,17 +96,14 @@ def getAccountBalanceToDate(id, todate):
     withdrawal = db.sumQuery("SELECT SUM(Amount) AS total FROM trx WHERE SourceAccountID = %s AND Deleted = 0 AND Date < %s" % (id, todate))
     # Total deposits
     deposit = db.sumQuery("SELECT SUM(Amount) AS total FROM trx WHERE DestinationAccountID = %s AND Deleted = 0 AND Date < %s" % (id, todate))
-    # Round off to 2 dp
-    deposit = round(deposit, 2)
-    withdrawal = round(withdrawal, 2)
     # Produce the figure based on account type
     t = db.first("SELECT Type AS first FROM accounts WHERE id=%s" % id)
     # Income and expense accounts should always be positive, the others
     # will be correct for deposit/withdrawal
     if t == 3 or t == 4:
-        return abs(round(deposit - withdrawal, 2))
+        return abs(deposit - withdrawal)
     else:
-	return round(deposit - withdrawal, 2)
+    	return deposit - withdrawal
  
 def getReconciled(id):
     """
@@ -126,17 +114,14 @@ def getReconciled(id):
     withdrawal = db.sumQuery("SELECT SUM(Amount) AS total FROM trx WHERE SourceAccountID = %s AND Reconciled = 1 AND Deleted = 0" % id)
     # Total deposits
     deposit = db.sumQuery("SELECT SUM(Amount) AS total FROM trx WHERE DestinationAccountID = %s AND Reconciled = 1 AND Deleted = 0" % id)
-    # Round off to 2 dp
-    deposit = round(deposit, 2)
-    withdrawal = round(withdrawal, 2)
     # Produce the figure based on account type
     t = db.first("SELECT Type AS first FROM accounts WHERE id=%s" % id)
     # Income and expense accounts should always be positive, the others
     # will be correct for deposit/withdrawal
     if t == 3 or t == 4:
-        return abs(round(deposit - withdrawal, 2))
+        return abs(deposit - withdrawal)
     else:
-        return round(deposit - withdrawal, 2)
+        return deposit - withdrawal
 
 def getReconciledFromDate(id, fromdate):
     """
@@ -147,17 +132,14 @@ def getReconciledFromDate(id, fromdate):
     withdrawal = db.sumQuery("SELECT SUM(Amount) AS total FROM trx WHERE SourceAccountID = %s AND Reconciled = 1 AND Deleted = 0 AND Date >= %s" % (id, fromdate))
     # Total deposits
     deposit = db.sumQuery("SELECT SUM(Amount) AS total FROM trx WHERE DestinationAccountID = %s AND Reconciled = 1 AND Deleted = 0 AND Date >= %s" % (id, fromdate))
-    # Round off to 2 dp
-    deposit = round(deposit, 2)
-    withdrawal = round(withdrawal, 2)
     # Produce the figure based on account type
     t = db.first("SELECT Type AS first FROM accounts WHERE id=%s" % id)
     # Income and expense accounts should always be positive, the others
     # will be correct for deposit/withdrawal
     if t == 3 or t == 4:
-        return abs(round(deposit - withdrawal, 2))
+        return abs(deposit - withdrawal)
     else:
-	return round(deposit - withdrawal, 2)
+	return deposit - withdrawal
 
 def getAccountById(id):
     """

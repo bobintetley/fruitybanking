@@ -4,12 +4,6 @@ import accounts
 import datetime
 import time
 import db
-import locale
-
-#locale.setlocale(locale.LC_ALL, 'en_US')
-
-def number_format(num, places=2):
-    return locale.format("%.*f", (places, num), True)
 
 class Transaction:
     """

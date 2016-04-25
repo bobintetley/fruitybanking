@@ -40,6 +40,12 @@ else:
 app = web.application(urls, globals())
 application = app.wsgifunc()
 
+def currency_out(num):
+    return "%0.2f" % (int(num) / 100.0)
+
+def currency_in(num):
+    return int(float(num) * 100.0)
+
 class account:
     def GET(self):
         """
@@ -101,7 +107,7 @@ class account:
                     <td class="money">%s</td>
                     <td align="right"><a href="account_reconcile?id=%s"><img alt="Reconcile" title="Mark transactions upto today as reconciled" border=0 src="static/reconcile.png"></a><a href="account_edit?id=%s"><img alt="Edit" title="Edit Account" border=0 src="static/edit.png"></a><a href="account_delete?id=%s"><img alt="Delete" title="Delete Account" border=0 src="static/delete.png"></a></td>
                 </tr>
-                """ % (bgcolor, a.id, a.code, accounts.getAccountTypeForID(a.type), a.description, accounts.number_format(a.reconciledtotal), accounts.number_format(a.balance), a.id, a.id, a.id)
+                """ % (bgcolor, a.id, a.code, accounts.getAccountTypeForID(a.type), a.description, currency_out(a.reconciledtotal), currency_out(a.balance), a.id, a.id, a.id)
         # HTML footer
         h = h + """
                   </tbody>
@@ -335,18 +341,16 @@ class transaction:
             # make things easier to read
             outputwithdrawal = ""
             outputdeposit = ""
-            if (float(t.deposit) > 0):
-                #outputdeposit = "%0.2f" % round(t.deposit, 2)
-		        outputdeposit = transactions.number_format(t.deposit)
-            if (float(t.withdrawal) > 0):
-                #outputwithdrawal = "%0.2f" % round(t.withdrawal, 2)
-		        outputwithdrawal = transactions.number_format(t.withdrawal)
+            if t.deposit > 0:
+		        outputdeposit = currency_out(t.deposit)
+            if t.withdrawal > 0:
+		        outputwithdrawal = currency_out(t.withdrawal)
 
             # Output the balance in red if it's overdrawn
-            outputbalance = "%0.2f" % round(t.balance, 2)
+            outputbalance = currency_out(t.balance)
              
-            if float(t.balance) < 0:
-                outputbalance = "<span class='negative'>%0.2f</span>" % round(t.balance, 2)
+            if t.balance < 0:
+                outputbalance = "<span class='negative'>%s</span>" % outputbalance
 
             # Is this the first date we've displayed that's
             # after today? If so, display a separator before outputting
@@ -459,9 +463,9 @@ class transaction_add:
         t.description = data.description
         t.otheraccountid = data.otheraccount
         if data.deposit != "": 
-            t.deposit = data.deposit
+            t.deposit = currency_in(data.deposit)
         if data.withdrawal != "":
-            t.withdrawal = data.withdrawal
+            t.withdrawal = currency_in(data.withdrawal)
         
         # Submit it for saving to the db
         transactions.createTransaction(t)
@@ -514,7 +518,7 @@ class transaction_edit:
                 </tr>
             </table>
             </form1>
-            """ % ( data.id, data.accountid, outputdate, t.description, accounts.getAccountsAsHTML(t.otheraccountid), t.deposit, t.withdrawal, transactions.getReconciledAsHTML(t.reconciled) )
+            """ % ( data.id, data.accountid, outputdate, t.description, accounts.getAccountsAsHTML(t.otheraccountid), currency_out(t.deposit), currency_out(t.withdrawal), transactions.getReconciledAsHTML(t.reconciled) )
         
         h = h + html.getHTMLFooter()    
         web.header("Content-Type", "text/html") 
@@ -531,8 +535,8 @@ class transaction_edit:
         t.description = data.description
         t.accountid = data.accountid
         t.otheraccountid = data.otheraccountid
-        t.deposit = data.deposit
-        t.withdrawal = data.withdrawal
+        t.deposit = currency_in(data.deposit)
+        t.withdrawal = currency_in(data.withdrawal)
         t.reconciled = data.reconciled
         transactions.updateTransaction(t)
         raise web.seeother("transaction?accountid=%s" % data.accountid)

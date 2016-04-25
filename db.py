@@ -7,12 +7,12 @@ def runQuery(sql):
     return db.query(sql).list()
 
 def sumQuery(sql):
-    rv = 0.0
+    rv = 0
     rows = db.query(sql)
     for r in rows:
-        if type(r.total) == float:
+        if r.total is not None:
             rv = r.total
-            break
+        break
     return rv
 
 def first(sql):

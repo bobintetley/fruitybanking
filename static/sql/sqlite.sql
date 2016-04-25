@@ -13,7 +13,7 @@ CREATE TABLE trx (
 	description VARCHAR(255) NULL,
 	reconciled TINYINT NOT NULL,
 	deleted TINYINT NOT NULL,
-	amount DOUBLE NOT NULL,
+	amount INTEGER NOT NULL,
 	sourceaccountid INTEGER NOT NULL,
 	destinationaccountid INTEGER NOT NULL
 );

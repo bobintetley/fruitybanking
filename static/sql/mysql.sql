@@ -17,7 +17,7 @@ CREATE TABLE trx (
 	description varchar(255) NULL,
 	reconciled tinyint NOT NULL default 0,
 	deleted tinyint NOT NULL default 0,
-	amount double NOT NULL default 0,
+	amount integer NOT NULL default 0,
 	sourceaccountid int(11) NOT NULL,
 	destinationaccountid int(11) NOT NULL,
 	PRIMARY KEY  (id),
