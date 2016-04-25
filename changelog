@@ -1,5 +1,6 @@
 201604
 ========
+Use web.py database support instead
 Rewrite to use web.py
 
 1.03

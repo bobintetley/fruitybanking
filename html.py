@@ -11,7 +11,7 @@ def getHTMLHeader(title):
             <html>
             <head>
             <title>FruityBanking - %s</title>
-            <link rel="stylesheet" href="/static/style.css" />
+            <link rel="stylesheet" href="static/style.css" />
             <link type="text/css" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/themes/smoothness/jquery-ui.css" rel="stylesheet" />
             <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
             <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>

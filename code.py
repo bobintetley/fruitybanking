@@ -2,16 +2,18 @@
 
 import datetime
 import os, sys
-
-import accounts
-import html
 import json
-import reports
-import transactions
 import web
 
 PATH = os.path.dirname(os.path.abspath(__file__)) + os.sep
 sys.path.append(PATH)
+
+import accounts
+import db
+import html
+import reports
+import transactions
+from sitedefs import DB_TYPE, DB_NAME, DB_USER, DB_PASSWORD
 
 urls = (
     "/", "account",
@@ -28,6 +30,12 @@ urls = (
     "/report", "report",
     "/report_render", "report_render"
 )
+
+if DB_TYPE == "postgres" or DB_TYPE == "mysql":
+    db.db = web.database(dbn=DB_TYPE, db=DB_NAME, user=DB_USER, pw=DB_PASSWORD)
+else:
+    if not DB_NAME.startswith("/"): DB_NAME = "%s%s" % (PATH, DB_NAME)
+    db.db = web.database(dbn="sqlite", db=DB_NAME)
 
 app = web.application(urls, globals())
 application = app.wsgifunc()
@@ -52,7 +60,7 @@ class account:
             <h2>Accounts</h2>
                 <div id="menu"><ul id="nav">
                 <li>%s</li>
-                <li><img src="/static/plus.gif" /> <a href="account_add" id="new-account">New Account</a></li>
+                <li><img src="static/plus.gif" /> <a href="account_add" id="new-account">New Account</a></li>
                 <li><a href="report">Reports</a></li><li></li></ul></div>
                 <table width=100%%>
                   <thead>
@@ -91,7 +99,7 @@ class account:
                     <td>%s</td>
                     <td class="money">%s</td>
                     <td class="money">%s</td>
-                    <td align="right"><a href="account_reconcile?id=%s"><img alt="Reconcile" title="Mark transactions upto today as reconciled" border=0 src="/static/reconcile.png"></a><a href="account_edit?id=%s"><img alt="Edit" title="Edit Account" border=0 src="/static/edit.png"></a><a href="account_delete?id=%s"><img alt="Delete" title="Delete Account" border=0 src="/static/delete.png"></a></td>
+                    <td align="right"><a href="account_reconcile?id=%s"><img alt="Reconcile" title="Mark transactions upto today as reconciled" border=0 src="static/reconcile.png"></a><a href="account_edit?id=%s"><img alt="Edit" title="Edit Account" border=0 src="static/edit.png"></a><a href="account_delete?id=%s"><img alt="Delete" title="Delete Account" border=0 src="static/delete.png"></a></td>
                 </tr>
                 """ % (bgcolor, a.id, a.code, accounts.getAccountTypeForID(a.type), a.description, accounts.number_format(a.reconciledtotal), accounts.number_format(a.balance), a.id, a.id, a.id)
         # HTML footer
@@ -100,7 +108,7 @@ class account:
                 </table>
                 """
         h = h + html.getHTMLFooter()
-            
+        web.header("Content-Type", "text/html") 
         return h
    
 class account_add:
@@ -135,6 +143,7 @@ class account_add:
                 </form>
             """ % accounts.getAccountTypesAsHTML()
         h = h + html.getHTMLFooter()
+        web.header("Content-Type", "text/html") 
         return h
 
     def POST(self):
@@ -187,6 +196,7 @@ class account_edit:
         """ % (a.id, a.code, accounts.getAccountTypesAsHTML(a.type), a.description)
         # Footer
         h = h + html.getHTMLFooter()
+        web.header("Content-Type", "text/html") 
         return h
 
     def POST(self):
@@ -282,7 +292,7 @@ class transaction:
                         <th></th>
                     </tr>
                   </thead>
-                """ % ( accountid, data.datefrom, data.dateto ))
+                """ % ( accountid, datefrom, dateto ))
         
         # Whether we've output a marker for today
         displayedToday = False
@@ -373,8 +383,8 @@ class transaction:
                         <td class="money">%s</td>
                         <td class="money">%s</td>
                         <td>
-                            <a href="transaction_edit?id=%s&accountid=%s"><img alt="Edit" title="Edit Transaction" border=0 src="/static/edit.png"/></a>
-                            <a href="transaction_delete?id=%s&accountid=%s"><img alt="Delete" title="Delete Transaction" border=0 src="/static/delete.png"/></a>
+                            <a href="transaction_edit?id=%s&accountid=%s"><img alt="Edit" title="Edit Transaction" border=0 src="static/edit.png"/></a>
+                            <a href="transaction_delete?id=%s&accountid=%s"><img alt="Delete" title="Delete Transaction" border=0 src="static/delete.png"/></a>
                         </td>
                     </tr>
             """ % ( bgcolor, outputdate, outputreconciled, t.description, outputotheraccount, outputdeposit, outputwithdrawal, outputbalance, t.id, accountid, t.id, accountid ))
@@ -427,7 +437,7 @@ class transaction:
         """)
         
         h.add(html.getHTMLFooter())
-        
+        web.header("Content-Type", "text/html") 
         return h.get()
        
 class transaction_add:
@@ -507,7 +517,7 @@ class transaction_edit:
             """ % ( data.id, data.accountid, outputdate, t.description, accounts.getAccountsAsHTML(t.otheraccountid), t.deposit, t.withdrawal, transactions.getReconciledAsHTML(t.reconciled) )
         
         h = h + html.getHTMLFooter()    
-        
+        web.header("Content-Type", "text/html") 
         return h
 
     def POST(self):
@@ -573,6 +583,7 @@ class report:
 	      """ % (transactions.getToday(), transactions.getToday()))
        
         h.add(html.getHTMLFooter()) 
+        web.header("Content-Type", "text/html") 
         return h.get()
 
 class report_render:
@@ -581,6 +592,7 @@ class report_render:
     	Render the given report with a from/to date
     	"""
         data = web.input(datefrom = "", dateto = "", report = "")
+        web.header("Content-Type", "text/html") 
         # Check dates
         try:
             pyfrom = transactions.displayToPythonDate(data.datefrom)

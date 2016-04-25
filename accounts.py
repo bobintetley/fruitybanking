@@ -36,13 +36,13 @@ def getAllAccounts():
     # Create the list we'll return
     l = []
     # Loop through the rows
-    for row in range(len(d)):
+    for row in d:
         
         a = Account()
-        a.id = d[row][0]
-        a.code = d[row][1]
-        a.description = d[row][2]
-        a.type = d[row][3]
+        a.id = row.ID
+        a.code = row.Code
+        a.description = row.Description
+        a.type = row.Type
         if has_period and a.type in (3, 4):
             a.balance = getAccountBalanceFromDate(a.id, ACCOUNTING_PERIOD)
             a.reconciledtotal = getReconciledFromDate(a.id, ACCOUNTING_PERIOD)
@@ -60,25 +60,14 @@ def getAccountBalance(id):
         based on the account type.
     """
     # Total withdrawals
-    d = db.runQuery("SELECT SUM(Amount) FROM trx WHERE SourceAccountID = %s AND Deleted = 0" % id)
-    withdrawal = 0
-    if (len(d) > 0):
-        withdrawal = d[0][0]
+    withdrawal = db.sumQuery("SELECT SUM(Amount) AS total FROM trx WHERE SourceAccountID = %s AND Deleted = 0" % id)
     # Total deposits
-    d = db.runQuery("SELECT SUM(Amount) FROM trx WHERE DestinationAccountID = %s AND Deleted = 0" % id)
-    deposit = 0
-    if (len(d) > 0):
-        deposit = d[0][0]
-    if deposit == None:
-        deposit = 0
-    if withdrawal == None:
-        withdrawal = 0
+    deposit = db.sumQuery("SELECT SUM(Amount) AS total FROM trx WHERE DestinationAccountID = %s AND Deleted = 0" % id)
     # Round off to 2 dp
     deposit = round(deposit, 2)
     withdrawal = round(withdrawal, 2)
     # Produce the figure based on account type
-    atype = db.runQuery("SELECT Type FROM accounts WHERE ID=%s" % id)
-    t = int(atype[0][0]) 
+    t = db.first("SELECT Type AS first FROM accounts WHERE ID=%s" % id)
     # Income and expense accounts should always be positive, the others
     # will be correct for deposit/withdrawal
     if t == 3 or t == 4:
@@ -92,25 +81,14 @@ def getAccountBalanceFromDate(id, fromdate):
 	    (fromdate is expected in UNIX form)
     """
     # Total withdrawals
-    d = db.runQuery("SELECT SUM(Amount) FROM trx WHERE SourceAccountID = %s AND Deleted = 0 AND Date >= %s" % (id, fromdate))
-    withdrawal = 0
-    if (len(d) > 0):
-        withdrawal = d[0][0]
+    withdrawal = db.sumQuery("SELECT SUM(Amount) AS total FROM trx WHERE SourceAccountID = %s AND Deleted = 0 AND Date >= %s" % (id, fromdate))
     # Total deposits
-    d = db.runQuery("SELECT SUM(Amount) FROM trx WHERE DestinationAccountID = %s AND Deleted = 0 AND Date >= %s" % (id, fromdate))
-    deposit = 0
-    if (len(d) > 0):
-        deposit = d[0][0]
-    if deposit == None:
-        deposit = 0
-    if withdrawal == None:
-        withdrawal = 0
+    deposit = db.sumQuery("SELECT SUM(Amount) AS total FROM trx WHERE DestinationAccountID = %s AND Deleted = 0 AND Date >= %s" % (id, fromdate))
     # Round off to 2 dp
     deposit = round(deposit, 2)
     withdrawal = round(withdrawal, 2)
     # Produce the figure based on account type
-    atype = db.runQuery("SELECT Type FROM accounts WHERE ID=%s" % id)
-    t = int(atype[0][0]) 
+    t = db.first("SELECT Type AS first FROM accounts WHERE ID=%s" % id)
     # Income and expense accounts should always be positive, the others
     # will be correct for deposit/withdrawal
     if t == 3 or t == 4:
@@ -124,25 +102,14 @@ def getAccountBalanceToDate(id, todate):
 	(todate is expected in UNIX form)
     """
     # Total withdrawals
-    d = db.runQuery("SELECT SUM(Amount) FROM trx WHERE SourceAccountID = %s AND Deleted = 0 AND Date < %s" % (id, todate))
-    withdrawal = 0
-    if (len(d) > 0):
-        withdrawal = d[0][0]
+    withdrawal = db.sumQuery("SELECT SUM(Amount) AS total FROM trx WHERE SourceAccountID = %s AND Deleted = 0 AND Date < %s" % (id, todate))
     # Total deposits
-    d = db.runQuery("SELECT SUM(Amount) FROM trx WHERE DestinationAccountID = %s AND Deleted = 0 AND Date < %s" % (id, todate))
-    deposit = 0
-    if (len(d) > 0):
-        deposit = d[0][0]
-    if deposit == None:
-        deposit = 0
-    if withdrawal == None:
-        withdrawal = 0
+    deposit = db.sumQuery("SELECT SUM(Amount) AS total FROM trx WHERE DestinationAccountID = %s AND Deleted = 0 AND Date < %s" % (id, todate))
     # Round off to 2 dp
     deposit = round(deposit, 2)
     withdrawal = round(withdrawal, 2)
     # Produce the figure based on account type
-    atype = db.runQuery("SELECT Type FROM accounts WHERE ID=%s" % id)
-    t = int(atype[0][0]) 
+    t = db.first("SELECT Type AS first FROM accounts WHERE ID=%s" % id)
     # Income and expense accounts should always be positive, the others
     # will be correct for deposit/withdrawal
     if t == 3 or t == 4:
@@ -156,25 +123,14 @@ def getReconciled(id):
         based on the account type.
     """
     # Total withdrawals
-    d = db.runQuery("SELECT SUM(Amount) FROM trx WHERE SourceAccountID = %s AND Reconciled = 1 AND Deleted = 0" % id)
-    withdrawal = 0
-    if (len(d) > 0):
-        withdrawal = d[0][0]
+    withdrawal = db.sumQuery("SELECT SUM(Amount) AS total FROM trx WHERE SourceAccountID = %s AND Reconciled = 1 AND Deleted = 0" % id)
     # Total deposits
-    d = db.runQuery("SELECT SUM(Amount) FROM trx WHERE DestinationAccountID = %s AND Reconciled = 1 AND Deleted = 0" % id)
-    deposit = 0
-    if (len(d) > 0):
-        deposit = d[0][0]
-    if deposit == None:
-        deposit = 0
-    if withdrawal == None:
-        withdrawal = 0
+    deposit = db.sumQuery("SELECT SUM(Amount) AS total FROM trx WHERE DestinationAccountID = %s AND Reconciled = 1 AND Deleted = 0" % id)
     # Round off to 2 dp
     deposit = round(deposit, 2)
     withdrawal = round(withdrawal, 2)
     # Produce the figure based on account type
-    atype = db.runQuery("SELECT Type FROM accounts WHERE ID=%s" % id)
-    t = int(atype[0][0]) 
+    t = db.first("SELECT Type AS first FROM accounts WHERE ID=%s" % id)
     # Income and expense accounts should always be positive, the others
     # will be correct for deposit/withdrawal
     if t == 3 or t == 4:
@@ -188,25 +144,14 @@ def getReconciledFromDate(id, fromdate):
         based on the account type from a certain date.
     """
     # Total withdrawals
-    d = db.runQuery("SELECT SUM(Amount) FROM trx WHERE SourceAccountID = %s AND Reconciled = 1 AND Deleted = 0 AND Date >= %s" % (id, fromdate))
-    withdrawal = 0
-    if (len(d) > 0):
-        withdrawal = d[0][0]
+    withdrawal = db.sumQuery("SELECT SUM(Amount) AS total FROM trx WHERE SourceAccountID = %s AND Reconciled = 1 AND Deleted = 0 AND Date >= %s" % (id, fromdate))
     # Total deposits
-    d = db.runQuery("SELECT SUM(Amount) FROM trx WHERE DestinationAccountID = %s AND Reconciled = 1 AND Deleted = 0 AND Date >= %s" % (id, fromdate))
-    deposit = 0
-    if (len(d) > 0):
-        deposit = d[0][0]
-    if deposit == None:
-        deposit = 0
-    if withdrawal == None:
-        withdrawal = 0
+    deposit = db.sumQuery("SELECT SUM(Amount) AS total FROM trx WHERE DestinationAccountID = %s AND Reconciled = 1 AND Deleted = 0 AND Date >= %s" % (id, fromdate))
     # Round off to 2 dp
     deposit = round(deposit, 2)
     withdrawal = round(withdrawal, 2)
     # Produce the figure based on account type
-    atype = db.runQuery("SELECT Type FROM accounts WHERE ID=%s" % id)
-    t = int(atype[0][0]) 
+    t = db.first("SELECT Type AS first FROM accounts WHERE ID=%s" % id)
     # Income and expense accounts should always be positive, the others
     # will be correct for deposit/withdrawal
     if t == 3 or t == 4:
@@ -220,15 +165,13 @@ def getAccountById(id):
     """
     # Retrieve it
     d = db.runQuery("SELECT ID, Code, Description, Type FROM accounts WHERE ID = %s" % id)
-    
     a = Account()
-    a.id = d[0][0]
-    a.code = d[0][1]
-    a.description = d[0][2]
-    a.type = d[0][3]
+    a.id = d[0].ID
+    a.code = d[0].Code
+    a.description = d[0].Description
+    a.type = d[0].Type
     a.balance = getAccountBalance(a.id)
     a.reconciledtotal = getReconciled(a.id)
-        
     return a
     
 def getAccountByCode(code):
@@ -237,15 +180,13 @@ def getAccountByCode(code):
     """
     # Retrieve it
     d = db.runQuery("SELECT ID, Code, Description, Type FROM accounts WHERE Code = '%s'" % code)
-    
     a = Account()
-    a.id = d[0][0]
-    a.code = d[0][1]
-    a.description = d[0][2]
-    a.type = d[0][3]
+    a.id = d[0].ID
+    a.code = d[0].Code
+    a.description = d[0].Description
+    a.type = d[0].Type
     a.balance = getAccountBalance(a.id)
     a.reconciledtotal = getReconciled(a.id)
-        
     return a
     
 def updateAccount(accountObj):
@@ -253,7 +194,7 @@ def updateAccount(accountObj):
         Updates an existing account.
     """
     # Issue the update SQL
-    db.executeQuery("UPDATE accounts SET Code='%s', Type=%s, Description='%s' WHERE ID = %s" % ( accountObj.code, accountObj.type, accountObj.description, accountObj.id ))
+    db.db.update("accounts", code=accountObj.code, type=accountObj.type, description=accountObj.description, where="ID=%d" % int(accountObj.id))
     
 def createAccount(accountObj):
     """
@@ -261,7 +202,8 @@ def createAccount(accountObj):
         the id value of the newly created account.
     """
     aid = db.getId("accounts")
-    db.executeQuery("INSERT INTO accounts (ID, Code, Description, Type, Deleted) VALUES (" + str(aid) + ",'" + accountObj.code + "', '" + accountObj.description + "', " + accountObj.type + ",0)")    
+    db.db.insert("accounts", id=aid, code=accountObj.code, type=accountObj.type, description=accountObj.description, deleted=0)
+    return aid
     
 accounttypes = (
     ( 0, "Bank" ),
@@ -284,7 +226,7 @@ def totalBalanceForPeriod(dateto, accounttype):
     accs = []
     d = db.runQuery("SELECT ID, Code FROM accounts WHERE Type = %s AND Deleted = 0" % str(accounttype))
     for ar in d:
-        accs.append( [ ar[1], getAccountBalanceToDate(ar[0], udt) ] )
+        accs.append( [ ar.Code, getAccountBalanceToDate(ar.ID, udt) ] )
     return accs
 
 def totalForPeriod(datefrom, dateto, accounttype, deposits = False):
@@ -300,22 +242,17 @@ def totalForPeriod(datefrom, dateto, accounttype, deposits = False):
     d = db.runQuery("SELECT ID, Code FROM accounts WHERE Type = %s AND Deleted = 0" % str(accounttype))
     for ar in d:
         if deposits:
-		    dt = db.runQuery("SELECT SUM(Amount) FROM trx WHERE Date >= %s AND Date <= %s AND DestinationAccountID = %s AND Deleted=0" % ( udf, udt, ar[0] ))
+		    dtotal = db.sumQuery("SELECT SUM(Amount) AS total FROM trx WHERE Date >= %s AND Date <= %s AND DestinationAccountID = %s AND Deleted=0" % ( udf, udt, ar.ID ))
         else:
-            dt = db.runQuery("SELECT SUM(Amount) FROM trx WHERE Date >= %s AND Date <= %s AND SourceAccountID = %s AND Deleted=0" % ( udf, udt, ar[0] ))
-        dtotal = 0
-        if (len(dt) > 0):
-            dtotal = dt[0][0]
-        if dtotal == None:
-            dtotal = 0
-        accs.append( [ ar[1], dtotal ])
+            dtotal = db.sumQuery("SELECT SUM(Amount) AS total FROM trx WHERE Date >= %s AND Date <= %s AND SourceAccountID = %s AND Deleted=0" % ( udf, udt, ar.ID ))
+        accs.append( [ ar.Code, dtotal ])
     return accs
 
 def deleteAccount(id):
     """
         Marks the given account as deleted
     """
-    db.executeQuery("UPDATE accounts SET Deleted=1 WHERE ID=%s" % str(id))
+    db.db.update("accounts", deleted=1, where="ID=%d" % int(id))
     
 def getAccountTypesAsHTML(selected = -1):
     """

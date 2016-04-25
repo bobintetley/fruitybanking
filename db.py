@@ -1,58 +1,30 @@
+#!/usr/bin/python
 
-# MySQL DB =============================
-#import MySQLdb
-#mysql_host = "localhost"
-#mysql_user = "root"
-#mysql_password = ""
-#mysql_db = "fruitybanking"
+# Shared global connection
+db = None
 
-# SQLite 3 DB ==========================
-import sqlite3
-# SQLite 2
-#import sqlite 
-
-# PostgresSQL ==========================
-#from pyPgSQL import PgSQL
-#pg_host = "localhost"
-#pg_user = "user"
-#pg_passwd = "pass"
-    
-def getConnection():
-    """
-        Creates a connection to the database and returns it
-    """
-    # MySQL
-    #return MySQLdb.connect(host=mysql_host, user=mysql_user, passwd=mysql_password, db=mysql_db )
-    # SQLite
-    #return PgSQL.connect(None, pg_user, pg_passwd, pg_host, "fruitybanking")
-    return sqlite3.connect("fruitybanking.db", detect_types = sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES)
-    
 def runQuery(sql):
-    """
-        Runs the query given and returns the resultset
-        as a grid of tuples
-    """
-    # Grab a connection and cursor
-    c = getConnection()
-    s = c.cursor()
-    # Run the query and retrieve all rows
-    s.execute(sql)
-    d = s.fetchall()
-    # Close the cursor and connection
-    s.close()
-    c.close()
-    return d
-    
+    return db.query(sql).list()
+
+def sumQuery(sql):
+    rv = 0.0
+    rows = db.query(sql)
+    for r in rows:
+        if type(r.total) == float:
+            rv = r.total
+            break
+    return rv
+
+def first(sql):
+    rv = 0
+    rows = db.query(sql)
+    for r in rows:
+        rv = r.first
+        break
+    return rv
+
 def executeQuery(sql):
-    """
-        Runs the action query given
-    """
-    c = getConnection()
-    s = c.cursor()
-    s.execute(sql)
-    c.commit()
-    s.close()
-    c.close()
+    return db.execute(sql)
 
 def getId(table):
     """
@@ -61,10 +33,7 @@ def getId(table):
         field and returning that +1 (or 1 if the table
         has no records)
     """
-    d = runQuery("SELECT Max(ID) FROM %s" % table)
-    if (len(d) == 0) | (d[0][0] == None):
-        return 1
-    else:
-        return d[0][0] + 1
-   
-   
+    d = db.query("SELECT Max(ID) AS maxid FROM %s" % table)[0].maxid
+    if d is None: return 1
+    return d + 1
+
