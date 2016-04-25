@@ -67,7 +67,7 @@ def getAccountBalance(id):
     deposit = round(deposit, 2)
     withdrawal = round(withdrawal, 2)
     # Produce the figure based on account type
-    t = db.first("SELECT Type AS first FROM accounts WHERE ID=%s" % id)
+    t = db.first("SELECT Type AS first FROM accounts WHERE id=%s" % id)
     # Income and expense accounts should always be positive, the others
     # will be correct for deposit/withdrawal
     if t == 3 or t == 4:
@@ -88,7 +88,7 @@ def getAccountBalanceFromDate(id, fromdate):
     deposit = round(deposit, 2)
     withdrawal = round(withdrawal, 2)
     # Produce the figure based on account type
-    t = db.first("SELECT Type AS first FROM accounts WHERE ID=%s" % id)
+    t = db.first("SELECT Type AS first FROM accounts WHERE id=%s" % id)
     # Income and expense accounts should always be positive, the others
     # will be correct for deposit/withdrawal
     if t == 3 or t == 4:
@@ -109,7 +109,7 @@ def getAccountBalanceToDate(id, todate):
     deposit = round(deposit, 2)
     withdrawal = round(withdrawal, 2)
     # Produce the figure based on account type
-    t = db.first("SELECT Type AS first FROM accounts WHERE ID=%s" % id)
+    t = db.first("SELECT Type AS first FROM accounts WHERE id=%s" % id)
     # Income and expense accounts should always be positive, the others
     # will be correct for deposit/withdrawal
     if t == 3 or t == 4:
@@ -130,7 +130,7 @@ def getReconciled(id):
     deposit = round(deposit, 2)
     withdrawal = round(withdrawal, 2)
     # Produce the figure based on account type
-    t = db.first("SELECT Type AS first FROM accounts WHERE ID=%s" % id)
+    t = db.first("SELECT Type AS first FROM accounts WHERE id=%s" % id)
     # Income and expense accounts should always be positive, the others
     # will be correct for deposit/withdrawal
     if t == 3 or t == 4:
@@ -151,7 +151,7 @@ def getReconciledFromDate(id, fromdate):
     deposit = round(deposit, 2)
     withdrawal = round(withdrawal, 2)
     # Produce the figure based on account type
-    t = db.first("SELECT Type AS first FROM accounts WHERE ID=%s" % id)
+    t = db.first("SELECT Type AS first FROM accounts WHERE id=%s" % id)
     # Income and expense accounts should always be positive, the others
     # will be correct for deposit/withdrawal
     if t == 3 or t == 4:
@@ -194,7 +194,7 @@ def updateAccount(accountObj):
         Updates an existing account.
     """
     # Issue the update SQL
-    db.db.update("accounts", code=accountObj.code, type=accountObj.type, description=accountObj.description, where="ID=%d" % int(accountObj.id))
+    db.db.update("accounts", code=accountObj.code, type=accountObj.type, description=accountObj.description, where="id=%d" % int(accountObj.id))
     
 def createAccount(accountObj):
     """
@@ -252,7 +252,7 @@ def deleteAccount(id):
     """
         Marks the given account as deleted
     """
-    db.db.update("accounts", deleted=1, where="ID=%d" % int(id))
+    db.db.update("accounts", deleted=1, where="id=%d" % int(id))
     
 def getAccountTypesAsHTML(selected = -1):
     """

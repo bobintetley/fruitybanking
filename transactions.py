@@ -48,14 +48,14 @@ def updateTransaction(transactionObj):
         destaccount = transactionObj.otheraccountid
         amount = transactionObj.withdrawal
    
-    db.db.update("trx", date=toUnixDate(transactionObj.date), description=transactionObj.description, amount=amount, sourceaccountid=sourceaccount, destinationaccountid=destaccount, reconciled=transactionObj.reconciled, where="ID=%d" % int(transactionObj.id))
+    db.db.update("trx", date=toUnixDate(transactionObj.date), description=transactionObj.description, amount=amount, sourceaccountid=sourceaccount, destinationaccountid=destaccount, reconciled=transactionObj.reconciled, where="id=%d" % int(transactionObj.id))
     
 def createTransaction(transactionObj):
     """
         Creates a transaction record from a supplied 
-	Transaction object (ID is ignored and regenerated on the object)
+	Transaction object (id is ignored and regenerated on the object)
     """
-    # Get the next ID for the table
+    # Get the next id for the table
     tid = int(db.getId("trx"))
     transactionObj.id = tid
 
@@ -111,25 +111,25 @@ def getTransactions(accountid, datefrom, dateto):
     for row in d:
         
         t = Transaction()
-        t.id = row.ID
+        t.id = row.id
         t.accountid = accountid
-        t.date = toPythonDate(row.Date)
-        t.description = row.Description
-        t.reconciled = row.Reconciled
+        t.date = toPythonDate(row.date)
+        t.description = row.description
+        t.reconciled = row.reconciled
         
         # If the account is the source, then it must be a
         # withdrawal and the dest account is the "other" account
-        if (row.SourceAccountID == int(accountid)):
-            t.withdrawal = row.Amount
+        if (row.sourceaccountid == int(accountid)):
+            t.withdrawal = row.amount
             t.deposit = 0
-            t.otheraccountid = row.DestinationAccountID
+            t.otheraccountid = row.destinationaccountid
             t.otheraccountcode = accounts.getAccountById(t.otheraccountid).code
             balance = balance - t.withdrawal
         else:
             # It's a deposit and the source account is the "other" account
-            t.deposit = row.Amount
+            t.deposit = row.amount
             t.withdrawal = 0
-            t.otheraccountid = row.SourceAccountID
+            t.otheraccountid = row.sourceaccountid
             t.otheraccountcode = accounts.getAccountById(t.otheraccountid).code
             balance = balance + t.deposit
         
@@ -166,7 +166,7 @@ def markTransactionReconciled(transactionid):
         Marks a given transaction as reconciled against
     a bank statement.
     """
-    db.db.update("trx", reconciled=1, where="ID=%d" % int(transactionid))
+    db.db.update("trx", reconciled=1, where="id=%d" % int(transactionid))
     
 def getTransactionById(transactionid, accountid):
     """
@@ -178,7 +178,7 @@ def getTransactionById(transactionid, accountid):
 
     d = db.runQuery("SELECT id, date, description, reconciled, amount, sourceaccountid, destinationaccountid FROM trx WHERE id=%s" % transactionid)
     t = Transaction()
-    t.id = d[0].ID
+    t.id = d[0].id
     t.accountid = accountid
     t.date = toPythonDate(d[0].date)
     t.description = d[0].description
@@ -204,7 +204,7 @@ def deleteTransaction(transactionid):
     """
         Marks a Transaction as deleted
     """
-    db.db.update("trx", deleted=1, where="ID=%d" % int(transactionid))
+    db.db.update("trx", deleted=1, where="id=%d" % int(transactionid))
     
 def getToday():
     """
