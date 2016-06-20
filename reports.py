@@ -6,7 +6,7 @@ import html
 def flt(x):
 	if x == None: return float(0)
 	if str(x) == "": return float(0)
-	return float(x)
+	return float(x) / 100
 
 def balanceSheet(dateto, readabledate):
     """ 
@@ -28,9 +28,9 @@ def balanceSheet(dateto, readabledate):
     h.add("<td>Cash</td><td>")
 
     l = accounts.totalBalanceForPeriod(dateto, 0)
-    ct = flt(0)
-    for i in l:
-        ct += flt(i[1])
+    ct = 0.0
+    for k, v in l:
+        ct += flt(v)
 
     h.add("%0.2f</td></tr>" % ct)
     assets += ct
@@ -39,9 +39,9 @@ def balanceSheet(dateto, readabledate):
     h.add("<tr><td>Pensions</td><td>")
 
     l = accounts.totalBalanceForPeriod(dateto, 5)
-    ct = flt(0)
-    for i in l:
-        ct += flt(i[1])
+    ct = 0.0
+    for k, v in l:
+        ct += flt(v)
 
     h.add("%0.2f</td></tr>" % ct)
     assets += ct
@@ -50,23 +50,23 @@ def balanceSheet(dateto, readabledate):
     h.add("<tr><td>Shares</td><td>")
 
     l = accounts.totalBalanceForPeriod(dateto, 6)
-    ct = flt(0)
-    for i in l:
-        ct += flt(i[1])
+    ct = 0.0
+    for k, v in l:
+        ct += flt(v)
 
     h.add("%0.2f</td></tr>" % ct)
     assets += ct
 
     # Other Assets
     l = accounts.totalBalanceForPeriod(dateto, 10)
-    for i in l:
+    for k, v in l:
         h.add("""
             <tr>
                 <td>%s</td>
                 <td>%0.2f</td>
             </tr>
-              """ % ( i[0], i[1] ))
-    assets += flt(i[1])
+              """ % ( k, flt(v)) )
+    assets += flt(v)
 
     # Liabilities
     h.add("</tr></table></td><td>")
@@ -75,36 +75,36 @@ def balanceSheet(dateto, readabledate):
 
     # Loans
     l = accounts.totalBalanceForPeriod(dateto, 2)
-    for i in l:
-		h.add("""
+    for k, v in l:
+        liabilities += abs(flt(v))
+        h.add("""
 			<tr>
 				<td>%s</td>
 				<td>%0.2f</td>
 			</tr>
-		      """ % ( i[0], abs(i[1]) ))
-                liabilities += abs(flt(i[1]))
+		      """ % ( k, abs(flt(v))))
 
     # Credit Cards
     l = accounts.totalBalanceForPeriod(dateto, 1)
-    for i in l:
-		h.add("""
+    for k, v in l:
+        liabilities += abs(flt(v))
+        h.add("""
 			<tr>
 				<td>%s</td>
 				<td>%0.2f</td>
 			</tr>
-		      """ % ( i[0], abs(i[1]) ))
-                liabilities += flt(abs(i[1]))
+		      """ % ( k, abs(flt(v))))
 
     # Liabilities
     l = accounts.totalBalanceForPeriod(dateto, 11)
-    for i in l:
-		h.add("""
+    for k, v in l:
+        liabilities += abs(flt(v))
+        h.add("""
 			<tr>
 				<td>%s</td>
 				<td>%0.2f</td>
 			</tr>
-		      """ % ( i[0], abs(i[1]) ))
-                liabilities += flt(abs(i[1]))
+		      """ % ( k, abs(flt(v))))
 
     h.add("</table>")
 
@@ -117,7 +117,7 @@ def balanceSheet(dateto, readabledate):
     h.add("</tr></table>")
 
     # Net worth
-    h.add("<h3>Net worth: %0.2f</h3>" % flt(assets - liabilities))
+    h.add("<h3>Net worth: %0.2f</h3>" % (assets - liabilities))
 
     h.add(html.getHTMLFooter())
     return h.get()
