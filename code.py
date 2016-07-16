@@ -115,6 +115,7 @@ class account:
                 """
         h = h + html.getHTMLFooter()
         web.header("Content-Type", "text/html") 
+        web.header("Cache-Control", "nocache") 
         return h
    
 class account_add:
@@ -150,6 +151,7 @@ class account_add:
             """ % accounts.getAccountTypesAsHTML()
         h = h + html.getHTMLFooter()
         web.header("Content-Type", "text/html") 
+        web.header("Cache-Control", "nocache") 
         return h
 
     def POST(self):
@@ -203,6 +205,7 @@ class account_edit:
         # Footer
         h = h + html.getHTMLFooter()
         web.header("Content-Type", "text/html") 
+        web.header("Cache-Control", "nocache") 
         return h
 
     def POST(self):
@@ -442,6 +445,7 @@ class transaction:
         
         h.add(html.getHTMLFooter())
         web.header("Content-Type", "text/html") 
+        web.header("Cache-Control", "nocache") 
         return h.get()
        
 class transaction_add:
@@ -522,6 +526,7 @@ class transaction_edit:
         
         h = h + html.getHTMLFooter()    
         web.header("Content-Type", "text/html") 
+        web.header("Cache-Control", "nocache") 
         return h
 
     def POST(self):
@@ -588,6 +593,7 @@ class report:
        
         h.add(html.getHTMLFooter()) 
         web.header("Content-Type", "text/html") 
+        web.header("Cache-Control", "nocache") 
         return h.get()
 
 class report_render:
@@ -597,6 +603,7 @@ class report_render:
     	"""
         data = web.input(datefrom = "", dateto = "", report = "")
         web.header("Content-Type", "text/html") 
+        web.header("Cache-Control", "nocache") 
         # Check dates
         try:
             pyfrom = transactions.displayToPythonDate(data.datefrom)
