@@ -44,7 +44,7 @@ def currency_out(num):
     return "%0.2f" % (int(num) / 100.0)
 
 def currency_in(num):
-    return int(float(num) * 100.0)
+    return int( (float(num) * 100.0) + 0.5) # Adding 0.5 corrects IEEE rounding errors
 
 class account:
     def GET(self):

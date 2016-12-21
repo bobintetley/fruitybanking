@@ -75,9 +75,6 @@ def getAccountBalanceFromDate(id, fromdate):
     withdrawal = db.sumQuery("SELECT SUM(Amount) AS total FROM trx WHERE SourceAccountID = %s AND Deleted = 0 AND Date >= %s" % (id, fromdate))
     # Total deposits
     deposit = db.sumQuery("SELECT SUM(Amount) AS total FROM trx WHERE DestinationAccountID = %s AND Deleted = 0 AND Date >= %s" % (id, fromdate))
-    # Round off to 2 dp
-    deposit = deposit
-    withdrawal = withdrawal
     # Produce the figure based on account type
     t = db.first("SELECT Type AS first FROM accounts WHERE id=%s" % id)
     # Income and expense accounts should always be positive, the others

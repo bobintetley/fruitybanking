@@ -8,9 +8,9 @@ compile:
 update:
 	rsync --exclude '*.pyc' --exclude 'sitedefs.py' --exclude 'fruitybanking.db' -r * root@rawsoaa3.miniserver.com:/usr/local/lib/fb_banking/
 	rsync --exclude '*.pyc' --exclude 'sitedefs.py' --exclude 'fruitybanking.db' -r * root@rawsoaa3.miniserver.com:/usr/local/lib/fb_sole/
-	rsync --exclude '*.pyc' --exclude 'sitedefs.py' --exclude 'fruitybanking.db' -r * root@rawsoaa2.miniserver.com:/usr/local/lib/fb_accounts/
+	rsync --exclude '*.pyc' --exclude 'sitedefs.py' --exclude 'fruitybanking.db' -r * root@rawsoaa18.miniserver.com:/usr/local/lib/fb_accounts/
 	ssh root@rawsoaa3.miniserver.com "touch /usr/local/lib/fb_banking/code.py && touch /usr/local/lib/fb_sole/code.py"
-	ssh root@rawsoaa2.miniserver.com "touch /usr/local/lib/fb_accounts/code.py"
+	ssh root@rawsoaa18.miniserver.com "touch /usr/local/lib/fb_accounts/code.py"
 
 test:
 	python code.py 5000
