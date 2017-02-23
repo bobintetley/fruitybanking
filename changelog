@@ -1,8 +1,8 @@
-201604
-========
-Use integers for amounts
-Use web.py database support instead
-Rewrite to use web.py
+
+20161221 Correct rounding errors in currency_in() for entering amounts
+20160410 Use integers for amounts
+20160410 Use web.py database support instead
+20160410 Rewrite to use web.py
 
 1.03
 ========
