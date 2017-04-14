@@ -136,7 +136,7 @@ def incomeExpenditure(datefrom, dateto, readabledate):
 	h.add("<h2>Expenses</h2>")
 	l = accounts.totalForPeriod(datefrom, dateto, 3, True)
 	h.add("<table>")
-	et = flt(0)
+	et = 0
 	for i in l:
 		h.add("""
 			<tr>
@@ -144,7 +144,7 @@ def incomeExpenditure(datefrom, dateto, readabledate):
 				<td>%0.2f</td>
 			</tr>
 		      """ % ( i[0], flt(i[1]) ))
-		et = et + flt(i[1])
+		et = et + i[1]
 	h.add("<tr><td><b>Total</b></td><td><b>%0.2f</b></td></tr>" % flt(et))
 	h.add("</table>")
 
@@ -152,15 +152,15 @@ def incomeExpenditure(datefrom, dateto, readabledate):
 	h.add("<h2>Loan Payments</h2>")
 	l = accounts.totalForPeriod(datefrom, dateto, 2, True)
 	h.add("<table>")
-	lt = flt(0)
+	lt = 0
 	for i in l:
 		h.add("""
 			<tr>
 				<td>%s</td>
 				<td>%0.2f</td>
 			</tr>
-		      """ % ( i[0], i[1] ))
-		lt = lt + flt(i[1])
+		      """ % ( i[0], flt(i[1]) ))
+		lt = lt + i[1]
 	h.add("<tr><td><b>Total</b></td><td><b>%0.2f</b></td></tr>" % flt(lt))
 	h.add("</table>")
 
@@ -168,15 +168,15 @@ def incomeExpenditure(datefrom, dateto, readabledate):
 	h.add("<h2>Credit Card Payments</h2>")
 	l = accounts.totalForPeriod(datefrom, dateto, 1, True)
 	h.add("<table>")
-	ct = flt(0)
+	ct = 0
 	for i in l:
 		h.add("""
 			<tr>
 				<td>%s</td>
 				<td>%0.2f</td>
 			</tr>
-		      """ % ( i[0], i[1] ))
-		ct = ct + flt(i[1])
+		      """ % ( i[0], flt(i[1]) ))
+		ct = ct + i[1]
 	h.add("<tr><td><b>Total</b></td><td><b>%0.2f</b></td></tr>" % flt(ct))
 	h.add("</table>")
 
@@ -187,7 +187,7 @@ def incomeExpenditure(datefrom, dateto, readabledate):
 	h.add("<h2>Income</h2>")
 	l = accounts.totalForPeriod(datefrom, dateto, 4, False)
 	h.add("<table>")
-	ti = flt(0)
+	ti = 0
 	for i in l:
 		h.add("""
 			<tr>
@@ -195,7 +195,7 @@ def incomeExpenditure(datefrom, dateto, readabledate):
 				<td>%0.2f</td>
 			</tr>
 		      """ % ( i[0], flt(i[1]) ))
-		ti = ti + flt(i[1])
+		ti = ti + i[1]
 	h.add("<tr><td><b>Total</b></td><td><b>%0.2f</b></td></tr>" % flt(ti))
 	h.add("</table>")
 
