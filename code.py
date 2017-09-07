@@ -282,10 +282,7 @@ class transaction:
                 </p>
                 </form>
                 <script>
-                $(function() {
-                    $("#datefrom, #dateto").datepicker({ dateFormat: "dd/mm/yy" });
-                    $("#filterdate").button();
-                });
+                    $(document).ready(trx_onload);
                 </script>
                 <form name="form1" method="post" action="transaction_add">
                 <table width="100%%">
@@ -338,7 +335,7 @@ class transaction:
             if (t.reconciled == 1):
                 outputreconciled = "R"
             else:
-                outputreconciled = "<a href='transaction_reconcile?id=%s&accountid=%s'>N</a>" % (t.id, accountid)
+                outputreconciled = "<a class='reconcile-link' data-trx-id='%s' data-account-id='%s' href='#'>N</a>" % (t.id, accountid)
                 
             # Substitute withdrawal/deposit for a blank if it's 0 to
             # make things easier to read
@@ -396,20 +393,6 @@ class transaction:
                     </tr>
             """ % ( bgcolor, outputdate, outputreconciled, t.description, outputotheraccount, outputdeposit, outputwithdrawal, outputbalance, t.id, accountid, t.id, accountid ))
 
-        # When the description changes, see if we have an account code
-        h.add("""<script>
-              $(function() {
-                  var desctoaccount = %s;
-                  var descs = %s;
-                  $("input[name='description']").autocomplete({ source: descs }).blur(function() {
-                      var oa = desctoaccount[$("input[name='description']").val()];
-                      if (oa) {
-                          $("select[name='otheraccount']").val(oa);
-                      }
-                  });
-              });
-              </script>""" % (json.dumps(desctoaccount), json.dumps(descs)))
-
         # Output form for creating a new transaction on the
         # end of the list.
         h.add("""
@@ -433,15 +416,12 @@ class transaction:
             <p><a href="index">Back</a></p>
             """)
 
-        # Scroll to the bottom of the screen and set focus to the date
-        h.add("""
-        <script type="text/javascript">
-        window.scrollTo(0, document.body.scrollHeight);
-        $(function() {
-            $("#datebox").focus();
-        });
-        </script>
-        """)
+        # Include a list of descriptions for previous transactions on the page 
+        # and a mapping to the last account we saw for that description
+        h.add("""<script>
+                desctoaccount = %s;
+                descs = %s;
+                </script>""" % (json.dumps(desctoaccount), json.dumps(descs)))
         
         h.add(html.getHTMLFooter())
         web.header("Content-Type", "text/html") 
@@ -553,7 +533,7 @@ class transaction_reconcile:
         """
         data = web.input(id = 0)
         transactions.markTransactionReconciled(data.id)
-        raise web.seeother("transaction?accountid=%s" % (data.accountid))
+        return "OK"
 
 class transaction_delete:
     def GET(self):
