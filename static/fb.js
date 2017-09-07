@@ -33,6 +33,7 @@ function trx_onload() {
         }).then(function(r) {
             if (r == "OK") { cell.html("R"); }
         });
+        return false; // cancel the click
     });
 
     // Scroll to the bottom of the screen and focus the new trx/date field
