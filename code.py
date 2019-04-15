@@ -25,6 +25,7 @@ urls = (
     "/transaction", "transaction",
     "/transaction_add", "transaction_add",
     "/transaction_reconcile", "transaction_reconcile", 
+    "/transaction_vat", "transaction_vat", 
     "/transaction_edit", "transaction_edit",
     "/transaction_delete", "transaction_delete",
     "/report", "report",
@@ -290,6 +291,7 @@ class transaction:
                     <tr>
                         <th>Date</th>
                         <th>R</th>
+                        <th>V</th>
                         <th>Description</th>
                         <th>Account</th>
                         <th>Deposit</th>
@@ -336,6 +338,12 @@ class transaction:
                 outputreconciled = "R"
             else:
                 outputreconciled = "<a class='reconcile-link' data-trx-id='%s' data-account-id='%s' href='#'>N</a>" % (t.id, accountid)
+
+            # Output "R" or a link to reconcile for reconciled
+            if (t.vat == 1):
+                outputvat = "V"
+            else:
+                outputvat = "<a class='vat-link' data-trx-id='%s' data-account-id='%s' href='#'>N</a>" % (t.id, accountid)
                 
             # Substitute withdrawal/deposit for a blank if it's 0 to
             # make things easier to read
@@ -366,6 +374,7 @@ class transaction:
                                 <td><hr color="red" size="1" noshade /></td>
                                 <td><hr color="red" size="1" noshade /></td>
                                 <td><hr color="red" size="1" noshade /></td>
+                                <td><hr color="red" size="1" noshade /></td>
                             </tr>
                         """)
                 displayedToday = True
@@ -381,6 +390,7 @@ class transaction:
                     <tr class="%s">
                         <td>%s</td>
                         <td class="reconciled">%s</td>
+                        <td class="vat">%s</td>
                         <td>%s</td>
                         <td>%s</td>
                         <td class="money">%s</td>
@@ -391,7 +401,7 @@ class transaction:
                             <a href="transaction_delete?id=%s&accountid=%s"><img alt="Delete" title="Delete Transaction" border=0 src="static/delete.png"/></a>
                         </td>
                     </tr>
-            """ % ( bgcolor, outputdate, outputreconciled, t.description, outputotheraccount, outputdeposit, outputwithdrawal, outputbalance, t.id, accountid, t.id, accountid ))
+            """ % ( bgcolor, outputdate, outputreconciled, outputvat, t.description, outputotheraccount, outputdeposit, outputwithdrawal, outputbalance, t.id, accountid, t.id, accountid ))
 
         # Output form for creating a new transaction on the
         # end of the list.
@@ -401,6 +411,7 @@ class transaction:
                     <input name="dateto" type="hidden" value="%s"/>
                     <input id="datebox" name="date" size=10 value="%s"/></td>
                     <td><input name="reconciled" type="checkbox"/></td>
+                    <td><input name="vat" type="checkbox"/></td>
                     <td><input name="description" /></td>
                     <td><input name="account" type="hidden" value="%s"/>
                         <select name="otheraccount">%s</select></td>
@@ -433,7 +444,7 @@ class transaction_add:
         """ 
             Called when a new transaction is submitted by the UI
         """
-        data = web.input(reconciled = 0, date = "", description = "", account = 0, otheraccount = 0, deposit = 0, withdrawal = 0)
+        data = web.input(reconciled = 0, vat = 0, date = "", description = "", account = 0, otheraccount = 0, deposit = 0, withdrawal = 0)
             
         # Create a new transaction object from data
         t = transactions.Transaction()
@@ -444,6 +455,7 @@ class transaction_add:
         t.date = datetime.date(int(datebits[2]), int(datebits[1]), int(datebits[0]))
     
         t.reconciled = data.reconciled
+        t.vat = data.vat
         t.description = data.description
         t.otheraccountid = data.otheraccount
         if data.deposit != "": 
@@ -497,12 +509,16 @@ class transaction_edit:
                     <td><select name="reconciled">%s</select></td>
                 </tr>
                 <tr>
+                    <td>VAT</td>
+                    <td><select name="vat">%s</select></td>
+                </tr>
+                <tr>
                     <td></td>
                     <td><input type="submit" value="submit"/></td>
                 </tr>
             </table>
             </form1>
-            """ % ( data.id, data.accountid, outputdate, t.description, accounts.getAccountsAsHTML(t.otheraccountid), currency_out(t.deposit), currency_out(t.withdrawal), transactions.getReconciledAsHTML(t.reconciled) )
+            """ % ( data.id, data.accountid, outputdate, t.description, accounts.getAccountsAsHTML(t.otheraccountid), currency_out(t.deposit), currency_out(t.withdrawal), transactions.getFlagAsHTML(t.reconciled), transactions.getFlagAsHTML(t.vat) )
         
         h = h + html.getHTMLFooter()    
         web.header("Content-Type", "text/html") 
@@ -513,7 +529,7 @@ class transaction_edit:
         """
         Fired when the user updates an existing transaction
         """
-        data = web.input(date = "", id = 0, description = "", accountid = 0, otheraccountid = 0, deposit = 0, withdrawal = 0, reconciled = 0)
+        data = web.input(date = "", id = 0, description = "", accountid = 0, otheraccountid = 0, deposit = 0, withdrawal = 0, reconciled = 0, vat = 0)
         t = transactions.Transaction()
         t.id = data.id 
         t.date = transactions.displayToPythonDate(data.date)
@@ -523,6 +539,7 @@ class transaction_edit:
         t.deposit = currency_in(data.deposit)
         t.withdrawal = currency_in(data.withdrawal)
         t.reconciled = data.reconciled
+        t.vat = data.vat
         transactions.updateTransaction(t)
         raise web.seeother("transaction?accountid=%s" % data.accountid)
 
@@ -533,6 +550,15 @@ class transaction_reconcile:
         """
         data = web.input(id = 0)
         transactions.markTransactionReconciled(data.id)
+        return "OK"
+
+class transaction_vat:
+    def GET(self):
+        """
+            Marks a transaction as vat
+        """
+        data = web.input(id = 0)
+        transactions.markTransactionVAT(data.id)
         return "OK"
 
 class transaction_delete:

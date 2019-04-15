@@ -12,6 +12,7 @@ CREATE TABLE trx (
 	date INTEGER NOT NULL,
 	description VARCHAR(255) NULL,
 	reconciled INTEGER NOT NULL,
+    vat INTEGER NOT NULL,
 	deleted INTEGER NOT NULL,
 	amount INTEGER NOT NULL,
 	sourceaccountid INTEGER NOT NULL,

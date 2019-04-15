@@ -16,6 +16,7 @@ CREATE TABLE trx (
 	date int(11) NOT NULL,
 	description varchar(255) NULL,
 	reconciled tinyint NOT NULL default 0,
+    vat tinyint NOT NULL default 0,
 	deleted tinyint NOT NULL default 0,
 	amount integer NOT NULL default 0,
 	sourceaccountid int(11) NOT NULL,

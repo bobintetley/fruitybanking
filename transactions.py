@@ -21,6 +21,7 @@ class Transaction:
     date = datetime.date.today()
     description = ""
     reconciled = 0
+    vat = 0
     accountid = 0
     otheraccountid = 0
     otheraccountcode = ""
@@ -42,7 +43,7 @@ def updateTransaction(transactionObj):
         destaccount = transactionObj.otheraccountid
         amount = transactionObj.withdrawal
    
-    db.db.update("trx", date=toUnixDate(transactionObj.date), description=transactionObj.description, amount=amount, sourceaccountid=sourceaccount, destinationaccountid=destaccount, reconciled=transactionObj.reconciled, where="id=%d" % int(transactionObj.id))
+    db.db.update("trx", date=toUnixDate(transactionObj.date), description=transactionObj.description, amount=amount, sourceaccountid=sourceaccount, destinationaccountid=destaccount, reconciled=transactionObj.reconciled, vat=transactionObj.vat, where="id=%d" % int(transactionObj.id))
     
 def createTransaction(transactionObj):
     """
@@ -56,6 +57,10 @@ def createTransaction(transactionObj):
     isreconciled = 0
     if str(transactionObj.reconciled) == "on":
         isreconciled = 1
+
+    isvat = 0
+    if str(transactionObj.vat) == "on":
+        isvat = 1
     
     # Sort out which way round the accounts are
     if float(transactionObj.deposit) > 0:
@@ -67,7 +72,7 @@ def createTransaction(transactionObj):
         destaccount = transactionObj.otheraccountid
         amount = transactionObj.withdrawal
         
-    db.db.insert("trx", id=tid, date=toUnixDate(transactionObj.date), description=transactionObj.description, amount=amount, sourceaccountid=sourceaccount, destinationaccountid=destaccount, reconciled=isreconciled, deleted=0)
+    db.db.insert("trx", id=tid, date=toUnixDate(transactionObj.date), description=transactionObj.description, amount=amount, sourceaccountid=sourceaccount, destinationaccountid=destaccount, reconciled=isreconciled, vat=isvat, deleted=0)
     return tid
     
 def getTransactions(accountid, datefrom, dateto):
@@ -96,7 +101,7 @@ def getTransactions(accountid, datefrom, dateto):
     l = []
     
     # Retrieve all the relevant transaction records
-    d = db.runQuery("SELECT id, date, description, reconciled, amount, sourceaccountid, destinationaccountid FROM trx WHERE deleted = 0 AND date >= %s AND date <= %s AND (sourceaccountid=%s OR destinationaccountid=%s) ORDER BY date" % (datefrom, dateto, accountid, accountid))
+    d = db.runQuery("SELECT id, date, description, reconciled, vat, amount, sourceaccountid, destinationaccountid FROM trx WHERE deleted = 0 AND date >= %s AND date <= %s AND (sourceaccountid=%s OR destinationaccountid=%s) ORDER BY date" % (datefrom, dateto, accountid, accountid))
 
     # Start the cumulative balance upto (but not including) the cut off date
     balance = accounts.getAccountBalanceToDate(accountid, datefrom)
@@ -110,6 +115,7 @@ def getTransactions(accountid, datefrom, dateto):
         t.date = toPythonDate(row.date)
         t.description = row.description
         t.reconciled = row.reconciled
+        t.vat = row.vat
         
         # If the account is the source, then it must be a
         # withdrawal and the dest account is the "other" account
@@ -134,17 +140,16 @@ def getTransactions(accountid, datefrom, dateto):
     
     return l
 
-def getReconciledAsHTML(selected = 0):
+def getFlagAsHTML(selected = 0):
     """
-        Returns HTML options representing whether a transaction is
-        reconciled.
+        Returns HTML options representing whether a flag is selected (1).
     """
     sel = ""
     s = ""
-    if selected == 0: sel = "selected "
+    if selected == 0: sel = "selected=\"selected\" "
     s = s + "<option %svalue='%s'>%s</option>" % ( sel, "0", "No" )
     sel = ""
-    if selected == 1: sel = "selected "
+    if selected == 1: sel = "selected=\"selected\" "
     s = s + "<option %svalue='%s'>%s</option>" % ( sel, "1", "Yes" )
     return s
 
@@ -161,6 +166,12 @@ def markTransactionReconciled(transactionid):
     a bank statement.
     """
     db.db.update("trx", reconciled=1, where="id=%d" % int(transactionid))
+
+def markTransactionVAT(transactionid):
+    """
+        Marks a given transaction as vattable
+    """
+    db.db.update("trx", vat=1, where="id=%d" % int(transactionid))
     
 def getTransactionById(transactionid, accountid):
     """
@@ -170,13 +181,14 @@ def getTransactionById(transactionid, accountid):
         other account.
     """
 
-    d = db.runQuery("SELECT id, date, description, reconciled, amount, sourceaccountid, destinationaccountid FROM trx WHERE id=%s" % transactionid)
+    d = db.runQuery("SELECT id, date, description, reconciled, vat, amount, sourceaccountid, destinationaccountid FROM trx WHERE id=%s" % transactionid)
     t = Transaction()
     t.id = d[0].id
     t.accountid = accountid
     t.date = toPythonDate(d[0].date)
     t.description = d[0].description
     t.reconciled = d[0].reconciled
+    t.vat = d[0].vat
     
     # If the account is the source, then it must be a
     # withdrawal and the dest account is the "other" account

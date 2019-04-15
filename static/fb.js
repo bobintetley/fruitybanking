@@ -36,6 +36,25 @@ function trx_onload() {
         return false; // cancel the click
     });
 
+    // When vat is clicked, process it asynchronously and update 
+    // the element to show reconciled
+    $(".vat-link").on("click", function() {
+        var tid = $(this).attr("data-trx-id"),
+            cell = $(this).closest(".vat");
+        $.ajax({
+            type: "GET",
+            url: "transaction_vat",
+            data: { "id": tid },
+            cache: false,
+            dataType: "text",
+            mimeType: "textPlain"
+        }).then(function(r) {
+            if (r == "OK") { cell.html("V"); }
+        });
+        return false; // cancel the click
+    });
+
+
     // Scroll to the bottom of the screen and focus the new trx/date field
     window.scrollTo(0, document.body.scrollHeight);
     $("#datebox").focus();
