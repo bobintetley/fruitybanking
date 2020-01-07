@@ -291,7 +291,7 @@ class transaction:
                     <tr>
                         <th>Date</th>
                         <th>R</th>
-                        <th class="vatc">V</th>
+                        <th class="showvat">V</th>
                         <th>Description</th>
                         <th>Account</th>
                         <th>Deposit</th>
@@ -390,7 +390,7 @@ class transaction:
                     <tr class="%s">
                         <td>%s</td>
                         <td class="reconciled">%s</td>
-                        <td class="vat vatc">%s</td>
+                        <td class="vat showvat">%s</td>
                         <td>%s</td>
                         <td>%s</td>
                         <td class="money">%s</td>
@@ -411,7 +411,7 @@ class transaction:
                     <input name="dateto" type="hidden" value="%s"/>
                     <input id="datebox" name="date" size=10 value="%s"/></td>
                     <td><input name="reconciled" type="checkbox"/></td>
-                    <td class="vatc"><input name="vat" type="checkbox"/></td>
+                    <td class="showvat"><input name="vat" type="checkbox"/></td>
                     <td><input name="description" /></td>
                     <td><input name="account" type="hidden" value="%s"/>
                         <select name="otheraccount">%s</select></td>
@@ -508,7 +508,7 @@ class transaction_edit:
                     <td>Reconciled</td>
                     <td><select name="reconciled">%s</select></td>
                 </tr>
-                <tr class="vatc">
+                <tr class="showvat">
                     <td>VAT</td>
                     <td><select name="vat">%s</select></td>
                 </tr>

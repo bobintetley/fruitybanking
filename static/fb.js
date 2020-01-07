@@ -19,7 +19,7 @@ function trx_onload() {
     });
 
     // Hide any vat controls if show vat is off
-    if (!SHOW_VAT) { $(".vatc").hide(); }
+    if (!SHOW_VAT) { $(".showvat").hide(); }
 
     // When reconcile is clicked, process it asynchronously and update 
     // the element to show reconciled
