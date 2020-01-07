@@ -1,5 +1,5 @@
 /*jslint browser: true, forin: true, eqeq: true, white: true, sloppy: true, vars: true, nomen: true */
-/*global $, descs, desctoaccount */
+/*global $, SHOW_VAT, descs, desctoaccount */
 
 function trx_onload() {
 
@@ -17,6 +17,9 @@ function trx_onload() {
             $("select[name='otheraccount']").val(oa);
         }
     });
+
+    // Hide any vat controls if show vat is off
+    if (!SHOW_VAT) { $(".vatc").hide(); }
 
     // When reconcile is clicked, process it asynchronously and update 
     // the element to show reconciled

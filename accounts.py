@@ -225,7 +225,7 @@ def totalForPeriod(datefrom, dateto, accounttype, deposits = False):
         else:
             dtotal = db.sumQuery("SELECT SUM(Amount) AS total FROM trx WHERE Date >= %s AND Date <= %s AND SourceAccountID = %s AND Deleted=0" % ( udf, udt, ar.id ))
         accs.append( [ ar.code, dtotal ])
-    return accs
+    return sorted(accs, key=lambda x:x[0])
 
 def deleteAccount(id):
     """

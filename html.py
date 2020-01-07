@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
-version = "v20170907"
-copyyear = "2005-2017"
+version = "v20200107"
+copyyear = "2005-2020"
+
+from sitedefs import SHOW_VAT
 
 def getHTMLHeader(title):
     """
@@ -13,13 +15,16 @@ def getHTMLHeader(title):
             <title>FruityBanking - %s</title>
             <link rel="stylesheet" href="static/style.css" />
             <link type="text/css" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/themes/smoothness/jquery-ui.css" rel="stylesheet" />
+            <script type="text/javascript">
+            SHOW_VAT = %s;
+            </script>
             <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
             <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
             <script type="text/javascript" src="static/fb.js"></script>
             </head>
             <body>            
 	    <img src="static/fruity.png" align="right" />
-       """ % title
+       """ % (title, SHOW_VAT and "true" or "false")
        
 def getHTMLFooter():
     """
