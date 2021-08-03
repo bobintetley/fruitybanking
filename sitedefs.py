@@ -1,8 +1,7 @@
-#!/usr/bin/env python
 
 import datetime, transactions
 
-ACCOUNTING_PERIOD = transactions.toUnixDate(datetime.date(2013, 04, 01))
+ACCOUNTING_PERIOD = transactions.toUnixDate(datetime.date(2013, 4, 1))
 NAMED_PERIOD = "1st April 2013 - 31st March 2014"
 SHOW_VAT = True
 

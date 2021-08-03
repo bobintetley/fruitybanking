@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 import datetime
 import os, sys
@@ -90,15 +90,15 @@ class account:
         light = "even"
         dark = "odd"
         bgcolor = light
-	
+        
         # Generate the HTML entries/links for each
         for a in acs:
-	    # Current colour
+            # Current colour
             if (bgcolor == dark):
-	        bgcolor = light
-	    else:
-	        bgcolor = dark
-	
+                bgcolor = light
+            else:
+                bgcolor = dark
+            
             h = h + """
                 <tr class="%s">
                     <td><a href="transaction?accountid=%s">%s</a></td>
@@ -226,17 +226,17 @@ class account_edit:
 class account_reconcile:
     def GET(self):
         """
-    	Mark all transactions on an account as reconciled upto today's date.
-    	"""
+        Mark all transactions on an account as reconciled upto today's date.
+        """
         data = web.input(id = 0)
-    	transactions.markAllTransactionsReconciled(data.id)
+        transactions.markAllTransactionsReconciled(data.id)
         raise web.seeother("index")
 
 class account_delete:
     def GET(self):
-    	"""
-	    Mark an account as deleted and return to the account list
-	    """
+        """
+        Mark an account as deleted and return to the account list
+        """
         data = web.input(id = 0)
         accounts.deleteAccount(data.id)
         raise web.seeother("index")
@@ -248,7 +248,7 @@ class transaction:
         """
         data = web.input(accountid = 0, dateto = "", datefrom = "")
         accountid = data.accountid
-    	h = html.StringBuilder()
+        h = html.StringBuilder()
         d31 = datetime.timedelta(days = 31)
        
         h.add(html.getHTMLHeader("Transactions - %s" % accounts.getAccountById(accountid).code))
@@ -315,7 +315,7 @@ class transaction:
         
         desctoaccount = {}
         descs = []
-        for i in xrange(0, len(trx)):
+        for i in range(0, len(trx)):
             
             # Get the transaction
             t = trx[i]
@@ -350,9 +350,9 @@ class transaction:
             outputwithdrawal = ""
             outputdeposit = ""
             if t.deposit > 0:
-		        outputdeposit = currency_out(t.deposit)
+                outputdeposit = currency_out(t.deposit)
             if t.withdrawal > 0:
-		        outputwithdrawal = currency_out(t.withdrawal)
+                outputwithdrawal = currency_out(t.withdrawal)
 
             # Output the balance in red if it's overdrawn
             outputbalance = currency_out(t.balance)
@@ -577,25 +577,24 @@ class report:
         """
         h = html.StringBuilder()
         h.add(html.getHTMLHeader("Reports"))
-    	h.add("<h2>Reports</h2>");
-    	h.add("""
-		<form action="report_render" method="post">
-
-		<p>Between: 
-		<input name="datefrom" type="text" width="12" value="%s" /> 
-		and 
-		<input name="dateto" type="text" width="12" value="%s" />
-		</p>
-		<p>Report:
-		<select name="report" size="8">
-		<option selected value="INCEXP">Income and Expenditure</option>
-		<option value="BALSH">Balance Sheet</option>
-		<!--<option value="PAL">Profit and Loss</option>-->
-		</select>
-		<p><input type="submit" value="Prepare" /></p>
-		<p><a href="index">Back</a></p>
-		</form>
-	      """ % (transactions.getToday(), transactions.getToday()))
+        h.add("<h2>Reports</h2>");
+        h.add("""
+                <form action="report_render" method="post">
+                <p>Between: 
+                <input name="datefrom" type="text" width="12" value="%s" /> 
+                and 
+                <input name="dateto" type="text" width="12" value="%s" />
+                </p>
+                <p>Report:
+                <select name="report" size="8">
+                <option selected value="INCEXP">Income and Expenditure</option>
+                <option value="BALSH">Balance Sheet</option>
+                <!--<option value="PAL">Profit and Loss</option>-->
+                </select>
+                <p><input type="submit" value="Prepare" /></p>
+                <p><a href="index">Back</a></p>
+                </form>
+              """ % (transactions.getToday(), transactions.getToday()))
        
         h.add(html.getHTMLFooter()) 
         web.header("Content-Type", "text/html") 
@@ -604,9 +603,9 @@ class report:
 
 class report_render:
     def POST(self):
-    	"""
-    	Render the given report with a from/to date
-    	"""
+        """
+        Render the given report with a from/to date
+        """
         data = web.input(datefrom = "", dateto = "", report = "")
         web.header("Content-Type", "text/html") 
         web.header("Cache-Control", "nocache") 

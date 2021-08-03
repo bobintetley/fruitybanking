@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+
 import db
 import transactions
 
@@ -64,12 +64,12 @@ def getAccountBalance(id):
     if t == 3 or t == 4:
         return abs(deposit - withdrawal)
     else:
-	return deposit - withdrawal
+        return deposit - withdrawal
 
 def getAccountBalanceFromDate(id, fromdate):
     """
         Returns the balance for a given account from a certain date
-	    (fromdate is expected in UNIX form)
+            (fromdate is expected in UNIX form)
     """
     # Total withdrawals
     withdrawal = db.sumQuery("SELECT SUM(Amount) AS total FROM trx WHERE SourceAccountID = %s AND Deleted = 0 AND Date >= %s" % (id, fromdate))
@@ -82,12 +82,12 @@ def getAccountBalanceFromDate(id, fromdate):
     if t == 3 or t == 4:
         return abs(deposit - withdrawal)
     else:
-	return deposit - withdrawal
+        return deposit - withdrawal
 
 def getAccountBalanceToDate(id, todate):
     """
         Returns the balance for a given account upto (but not including) a certain date
-	(todate is expected in UNIX form)
+        (todate is expected in UNIX form)
     """
     # Total withdrawals
     withdrawal = db.sumQuery("SELECT SUM(Amount) AS total FROM trx WHERE SourceAccountID = %s AND Deleted = 0 AND Date < %s" % (id, todate))
@@ -100,7 +100,7 @@ def getAccountBalanceToDate(id, todate):
     if t == 3 or t == 4:
         return abs(deposit - withdrawal)
     else:
-    	return deposit - withdrawal
+        return deposit - withdrawal
  
 def getReconciled(id):
     """
@@ -136,7 +136,7 @@ def getReconciledFromDate(id, fromdate):
     if t == 3 or t == 4:
         return abs(deposit - withdrawal)
     else:
-	return deposit - withdrawal
+        return deposit - withdrawal
 
 def getAccountById(id):
     """
@@ -192,7 +192,7 @@ accounttypes = (
     ( 4, "Income" ),
     ( 5, "Pension" ),
     ( 6, "Shares" ),
-	( 10, "Asset" ),
+        ( 10, "Asset" ),
     ( 11, "Liability" )
 )
 
@@ -210,10 +210,10 @@ def totalBalanceForPeriod(dateto, accounttype):
 
 def totalForPeriod(datefrom, dateto, accounttype, deposits = False):
     """
-	    Returns a list of lists for a given period and account type.
-	    [ [ accountcode, value ],  [ accountcode, value ] ]
-	    If deposits is True, only includes transactions
-	    with the account appearing in the DestinationAccountID
+        Returns a list of lists for a given period and account type.
+        [ [ accountcode, value ],  [ accountcode, value ] ]
+        If deposits is True, only includes transactions
+        with the account appearing in the DestinationAccountID
     """
     udf = transactions.toUnixDate(datefrom)
     udt = transactions.toUnixDate(dateto)
@@ -221,7 +221,7 @@ def totalForPeriod(datefrom, dateto, accounttype, deposits = False):
     d = db.runQuery("SELECT id, code FROM accounts WHERE type = %s AND deleted = 0" % str(accounttype))
     for ar in d:
         if deposits:
-		    dtotal = db.sumQuery("SELECT SUM(Amount) AS total FROM trx WHERE Date >= %s AND Date <= %s AND DestinationAccountID = %s AND Deleted=0" % ( udf, udt, ar.id ))
+            dtotal = db.sumQuery("SELECT SUM(Amount) AS total FROM trx WHERE Date >= %s AND Date <= %s AND DestinationAccountID = %s AND Deleted=0" % ( udf, udt, ar.id ))
         else:
             dtotal = db.sumQuery("SELECT SUM(Amount) AS total FROM trx WHERE Date >= %s AND Date <= %s AND SourceAccountID = %s AND Deleted=0" % ( udf, udt, ar.id ))
         accs.append( [ ar.code, dtotal ])
@@ -245,7 +245,6 @@ def getAccountTypesAsHTML(selected = -1):
         if (i[0] == selected):
             sel = "selected "
         s = s + "<option %svalue='%s'>%s</option>" % ( sel, i[0], i[1])
-        
     return s
     
 def getAccountTypeForID(type):
@@ -270,5 +269,4 @@ def getAccountsAsHTML(selected = -1):
         if (a.id == selected):
             sel = "selected "
         s = s + "<option %svalue='%s'>%s</option>" % ( sel, a.id, a.code )
-        
     return s

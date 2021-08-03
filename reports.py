@@ -1,12 +1,11 @@
-#!/usr/bin/env python
 
 import accounts
 import html
 
 def flt(x):
-	if x == None: return float(0)
-	if str(x) == "": return float(0)
-	return float(x) / 100
+    if x == None: return float(0)
+    if str(x) == "": return float(0)
+    return float(x) / 100
 
 def balanceSheet(dateto, readabledate):
     """ 
@@ -78,33 +77,33 @@ def balanceSheet(dateto, readabledate):
     for k, v in l:
         liabilities += abs(flt(v))
         h.add("""
-			<tr>
-				<td>%s</td>
-				<td>%0.2f</td>
-			</tr>
-		      """ % ( k, abs(flt(v))))
+                        <tr>
+                                <td>%s</td>
+                                <td>%0.2f</td>
+                        </tr>
+                      """ % ( k, abs(flt(v))))
 
     # Credit Cards
     l = accounts.totalBalanceForPeriod(dateto, 1)
     for k, v in l:
         liabilities += abs(flt(v))
         h.add("""
-			<tr>
-				<td>%s</td>
-				<td>%0.2f</td>
-			</tr>
-		      """ % ( k, abs(flt(v))))
+                        <tr>
+                                <td>%s</td>
+                                <td>%0.2f</td>
+                        </tr>
+                      """ % ( k, abs(flt(v))))
 
     # Liabilities
     l = accounts.totalBalanceForPeriod(dateto, 11)
     for k, v in l:
         liabilities += abs(flt(v))
         h.add("""
-			<tr>
-				<td>%s</td>
-				<td>%0.2f</td>
-			</tr>
-		      """ % ( k, abs(flt(v))))
+                        <tr>
+                                <td>%s</td>
+                                <td>%0.2f</td>
+                        </tr>
+                      """ % ( k, abs(flt(v))))
 
     h.add("</table>")
 
@@ -123,86 +122,86 @@ def balanceSheet(dateto, readabledate):
     return h.get()
 
 def incomeExpenditure(datefrom, dateto, readabledate):
-	"""
-		Prepares an income and expenditure report for the
-		two dates given and returns it as HTML.
-	"""
+    """
+        Prepares an income and expenditure report for the
+        two dates given and returns it as HTML.
+    """
 
-	h = html.StringBuilder()
-	h.add(html.getHTMLHeader("Income and Expenditure Report"))
-        h.add("<h1>Income and Expenditure Report (%s)</h1>" % readabledate)
+    h = html.StringBuilder()
+    h.add(html.getHTMLHeader("Income and Expenditure Report"))
+    h.add("<h1>Income and Expenditure Report (%s)</h1>" % readabledate)
 
-	# Expenses first (only deposits)
-	h.add("<h2>Expenses</h2>")
-	l = accounts.totalForPeriod(datefrom, dateto, 3, True)
-	h.add("<table>")
-	et = 0
-	for i in l:
-		h.add("""
-			<tr>
-				<td>%s</td>
-				<td>%0.2f</td>
-			</tr>
-		      """ % ( i[0], flt(i[1]) ))
-		et = et + i[1]
-	h.add("<tr><td><b>Total</b></td><td><b>%0.2f</b></td></tr>" % flt(et))
-	h.add("</table>")
+    # Expenses first (only deposits)
+    h.add("<h2>Expenses</h2>")
+    l = accounts.totalForPeriod(datefrom, dateto, 3, True)
+    h.add("<table>")
+    et = 0
+    for i in l:
+        h.add("""
+                <tr>
+                        <td>%s</td>
+                        <td>%0.2f</td>
+                </tr>
+              """ % ( i[0], flt(i[1]) ))
+        et = et + i[1]
+    h.add("<tr><td><b>Total</b></td><td><b>%0.2f</b></td></tr>" % flt(et))
+    h.add("</table>")
 
-	# Loan payments (only deposits)
-	h.add("<h2>Loan Payments</h2>")
-	l = accounts.totalForPeriod(datefrom, dateto, 2, True)
-	h.add("<table>")
-	lt = 0
-	for i in l:
-		h.add("""
-			<tr>
-				<td>%s</td>
-				<td>%0.2f</td>
-			</tr>
-		      """ % ( i[0], flt(i[1]) ))
-		lt = lt + i[1]
-	h.add("<tr><td><b>Total</b></td><td><b>%0.2f</b></td></tr>" % flt(lt))
-	h.add("</table>")
+    # Loan payments (only deposits)
+    h.add("<h2>Loan Payments</h2>")
+    l = accounts.totalForPeriod(datefrom, dateto, 2, True)
+    h.add("<table>")
+    lt = 0
+    for i in l:
+        h.add("""
+                <tr>
+                        <td>%s</td>
+                        <td>%0.2f</td>
+                </tr>
+              """ % ( i[0], flt(i[1]) ))
+        lt = lt + i[1]
+    h.add("<tr><td><b>Total</b></td><td><b>%0.2f</b></td></tr>" % flt(lt))
+    h.add("</table>")
 
-	# Credit card payments (only deposits)
-	h.add("<h2>Credit Card Payments</h2>")
-	l = accounts.totalForPeriod(datefrom, dateto, 1, True)
-	h.add("<table>")
-	ct = 0
-	for i in l:
-		h.add("""
-			<tr>
-				<td>%s</td>
-				<td>%0.2f</td>
-			</tr>
-		      """ % ( i[0], flt(i[1]) ))
-		ct = ct + i[1]
-	h.add("<tr><td><b>Total</b></td><td><b>%0.2f</b></td></tr>" % flt(ct))
-	h.add("</table>")
+    # Credit card payments (only deposits)
+    h.add("<h2>Credit Card Payments</h2>")
+    l = accounts.totalForPeriod(datefrom, dateto, 1, True)
+    h.add("<table>")
+    ct = 0
+    for i in l:
+        h.add("""
+                <tr>
+                        <td>%s</td>
+                        <td>%0.2f</td>
+                </tr>
+              """ % ( i[0], flt(i[1]) ))
+        ct = ct + i[1]
+    h.add("<tr><td><b>Total</b></td><td><b>%0.2f</b></td></tr>" % flt(ct))
+    h.add("</table>")
 
-	# Total expenditure
-	h.add("<h3>Total expenditure: %0.2f</h3>" % flt(ct + lt + et))
+    # Total expenditure
+    h.add("<h3>Total expenditure: %0.2f</h3>" % flt(ct + lt + et))
 
-	# Income (only withdrawals)
-	h.add("<h2>Income</h2>")
-	l = accounts.totalForPeriod(datefrom, dateto, 4, False)
-	h.add("<table>")
-	ti = 0
-	for i in l:
-		h.add("""
-			<tr>
-				<td>%s</td>
-				<td>%0.2f</td>
-			</tr>
-		      """ % ( i[0], flt(i[1]) ))
-		ti = ti + i[1]
-	h.add("<tr><td><b>Total</b></td><td><b>%0.2f</b></td></tr>" % flt(ti))
-	h.add("</table>")
+    # Income (only withdrawals)
+    h.add("<h2>Income</h2>")
+    l = accounts.totalForPeriod(datefrom, dateto, 4, False)
+    h.add("<table>")
+    ti = 0
+    for i in l:
+        h.add("""
+                <tr>
+                        <td>%s</td>
+                        <td>%0.2f</td>
+                </tr>
+              """ % ( i[0], flt(i[1]) ))
+        ti = ti + i[1]
+    h.add("<tr><td><b>Total</b></td><td><b>%0.2f</b></td></tr>" % flt(ti))
+    h.add("</table>")
 
-	# Total income
-	h.add("<h3>Total income: %0.2f</h3>" % flt(ti))
+    # Total income
+    h.add("<h3>Total income: %0.2f</h3>" % flt(ti))
 
-	h.add(html.getHTMLFooter())
-	return h.get()
+    h.add(html.getHTMLFooter())
+    return h.get()
 
 

@@ -1,7 +1,6 @@
-#!/usr/bin/env python
 
-version = "v20200107"
-copyyear = "2005-2020"
+version = "v20210803"
+copyyear = "2005-2021"
 
 from sitedefs import SHOW_VAT
 
@@ -9,9 +8,10 @@ def getHTMLHeader(title):
     """
         The HTML header for all pages
     """
-    return """
+    return """<!DOCTYPE html>
             <html>
             <head>
+            <meta charset="UTF-8" />
             <title>FruityBanking - %s</title>
             <link rel="stylesheet" href="static/style.css" />
             <link type="text/css" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/themes/smoothness/jquery-ui.css" rel="stylesheet" />
@@ -39,15 +39,12 @@ def getHTMLFooter():
             </body></html>
         """ % ( version, copyyear )
 
-from cStringIO import StringIO
-
 class StringBuilder:
-	def __init__(self):
-		self.buffer = StringIO()
-	def add(self, s):
-		if isinstance(s, unicode):
-			s = s.encode("ascii", "xmlcharrefreplace")
-		self.buffer.write(s)
-	def get(self):
-		return self.buffer.getvalue()
+    buffer = [] 
+    def __init__(self):
+        self.buffer = []
+    def add(self, s):
+        self.buffer.append(s)
+    def get(self):
+        return "".join(self.buffer)
 
