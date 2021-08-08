@@ -1,6 +1,6 @@
 
 import accounts
-import html
+import fbhtml
 
 def flt(x):
     if x == None: return float(0)
@@ -12,8 +12,8 @@ def balanceSheet(dateto, readabledate):
     Prepares a balance sheet upto the date given
     and returns it as HTML
     """
-    h = html.StringBuilder()
-    h.add(html.getHTMLHeader("Balance Sheet"))
+    h = fbhtml.StringBuilder()
+    h.add(fbhtml.getHTMLHeader("Balance Sheet"))
     h.add("<h1>Balance Sheet (%s)</h1>" % readabledate)
 
     # Assets
@@ -118,7 +118,7 @@ def balanceSheet(dateto, readabledate):
     # Net worth
     h.add("<h3>Net worth: %0.2f</h3>" % (assets - liabilities))
 
-    h.add(html.getHTMLFooter())
+    h.add(fbhtml.getHTMLFooter())
     return h.get()
 
 def incomeExpenditure(datefrom, dateto, readabledate):
@@ -127,8 +127,8 @@ def incomeExpenditure(datefrom, dateto, readabledate):
         two dates given and returns it as HTML.
     """
 
-    h = html.StringBuilder()
-    h.add(html.getHTMLHeader("Income and Expenditure Report"))
+    h = fbhtml.StringBuilder()
+    h.add(fbhtml.getHTMLHeader("Income and Expenditure Report"))
     h.add("<h1>Income and Expenditure Report (%s)</h1>" % readabledate)
 
     # Expenses first (only deposits)
@@ -201,7 +201,7 @@ def incomeExpenditure(datefrom, dateto, readabledate):
     # Total income
     h.add("<h3>Total income: %0.2f</h3>" % flt(ti))
 
-    h.add(html.getHTMLFooter())
+    h.add(fbhtml.getHTMLFooter())
     return h.get()
 
 

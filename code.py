@@ -10,7 +10,7 @@ sys.path.append(PATH)
 
 import accounts
 import db
-import html
+import fbhtml
 import reports
 import transactions
 from sitedefs import SHOW_VAT, DB_TYPE, DB_NAME, DB_USER, DB_PASSWORD
@@ -55,7 +55,7 @@ class account:
             with links to edit each account and view its transactions.
         """
         # Get the header
-        h = html.getHTMLHeader("Accounts")
+        h = fbhtml.getHTMLHeader("Accounts")
         # Get an account period if one is set
         try:
             from sitedefs import NAMED_PERIOD
@@ -114,7 +114,7 @@ class account:
                   </tbody>
                 </table>
                 """
-        h = h + html.getHTMLFooter()
+        h = h + fbhtml.getHTMLFooter()
         web.header("Content-Type", "text/html") 
         web.header("Cache-Control", "nocache") 
         return h
@@ -124,7 +124,7 @@ class account_add:
         """
             Page to allow adding of a new account
         """
-        h = html.getHTMLHeader("New Account")
+        h = fbhtml.getHTMLHeader("New Account")
         h = h + """
                 <h2>New Account</h2>
                 <form id="form1" method="post" action="account_add">
@@ -150,7 +150,7 @@ class account_add:
         
                 </form>
             """ % accounts.getAccountTypesAsHTML()
-        h = h + html.getHTMLFooter()
+        h = h + fbhtml.getHTMLFooter()
         web.header("Content-Type", "text/html") 
         web.header("Cache-Control", "nocache") 
         return h
@@ -176,7 +176,7 @@ class account_edit:
         # Grab the account
         a = accounts.getAccountById(data.id)
         # Build the HTML header
-        h = html.getHTMLHeader("Edit Account %s (%s)" % (a.code, a.description))
+        h = fbhtml.getHTMLHeader("Edit Account %s (%s)" % (a.code, a.description))
         # Generate the form
         h = h + """
             <h2>Edit Account</h2>
@@ -204,7 +204,7 @@ class account_edit:
             </form>
         """ % (a.id, a.code, accounts.getAccountTypesAsHTML(a.type), a.description)
         # Footer
-        h = h + html.getHTMLFooter()
+        h = h + fbhtml.getHTMLFooter()
         web.header("Content-Type", "text/html") 
         web.header("Cache-Control", "nocache") 
         return h
@@ -248,10 +248,10 @@ class transaction:
         """
         data = web.input(accountid = 0, dateto = "", datefrom = "")
         accountid = data.accountid
-        h = html.StringBuilder()
+        h = fbhtml.StringBuilder()
         d31 = datetime.timedelta(days = 31)
        
-        h.add(html.getHTMLHeader("Transactions - %s" % accounts.getAccountById(accountid).code))
+        h.add(fbhtml.getHTMLHeader("Transactions - %s" % accounts.getAccountById(accountid).code))
 
         dateto = data.dateto
         datefrom = data.datefrom
@@ -434,7 +434,7 @@ class transaction:
                 descs = %s;
                 </script>""" % (json.dumps(desctoaccount), json.dumps(descs)))
         
-        h.add(html.getHTMLFooter())
+        h.add(fbhtml.getHTMLFooter())
         web.header("Content-Type", "text/html") 
         web.header("Cache-Control", "nocache") 
         return h.get()
@@ -477,7 +477,7 @@ class transaction_edit:
         data = web.input(id = 0, accountid = 0)
         t = transactions.getTransactionById(data.id, data.accountid)
         outputdate = transactions.pythonToDisplayDate(t.date)
-        h = html.getHTMLHeader("Edit Transaction")
+        h = fbhtml.getHTMLHeader("Edit Transaction")
         h = h + """
             <h2>Edit Transaction</h2>
             <form action="transaction_edit" method="post">
@@ -520,7 +520,7 @@ class transaction_edit:
             </form1>
             """ % ( data.id, data.accountid, outputdate, t.description, accounts.getAccountsAsHTML(t.otheraccountid), currency_out(t.deposit), currency_out(t.withdrawal), transactions.getFlagAsHTML(t.reconciled), transactions.getFlagAsHTML(t.vat) )
         
-        h = h + html.getHTMLFooter()    
+        h = h + fbhtml.getHTMLFooter()    
         web.header("Content-Type", "text/html") 
         web.header("Cache-Control", "nocache") 
         return h
@@ -575,8 +575,8 @@ class report:
         """
             CherryPy UI class for reporting functionality
         """
-        h = html.StringBuilder()
-        h.add(html.getHTMLHeader("Reports"))
+        h = fbhtml.StringBuilder()
+        h.add(fbhtml.getHTMLHeader("Reports"))
         h.add("<h2>Reports</h2>");
         h.add("""
                 <form action="report_render" method="post">
@@ -596,7 +596,7 @@ class report:
                 </form>
               """ % (transactions.getToday(), transactions.getToday()))
        
-        h.add(html.getHTMLFooter()) 
+        h.add(fbhtml.getHTMLFooter()) 
         web.header("Content-Type", "text/html") 
         web.header("Cache-Control", "nocache") 
         return h.get()
@@ -614,7 +614,7 @@ class report_render:
             pyfrom = transactions.displayToPythonDate(data.datefrom)
             pyto = transactions.displayToPythonDate(data.dateto)
         except:
-            return html.getHTMLHeader("Error") + "<p>Invalid date given.</p>" + html.getHTMLFooter()
+            return fbhtml.getHTMLHeader("Error") + "<p>Invalid date given.</p>" + fbhtml.getHTMLFooter()
 
         if data.report == "INCEXP":
             readabledate = data.datefrom + " - " + data.dateto
