@@ -1,1 +1,9 @@
 
+Add cli.py
+
+(no args) outputs the list of accounts
+
+show [accountid] [fromdate] [todate] - dates are optional, shows a month either side if not given
+add date fromid toid amount
+reconcile - marks all transactions to today as reconciled
+
