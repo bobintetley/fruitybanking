@@ -241,5 +241,5 @@ def pythonToDisplayDate(d):
     """
         Converts a Python date to a display date
     """
-    return "%s/%s/%s" % (d.day, d.month, d.year)
+    return time.strftime("%d/%m/%Y", d.timetuple())
 

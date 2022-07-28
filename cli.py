@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import os, sys, re
+import os, sys, re, datetime
 
 """
 FruityBanking command line interface for viewing and adding transactions.
@@ -96,17 +96,62 @@ def show_accounts():
         data.append([ str(a.id), a.code, accounts.getAccountTypeForID(a.type), a.description, currency_out(a.reconciledtotal), currency_out(a.balance) ])
     print(ascii_table(data))
 
-
-
-
-
-
-
+def show_trx(accountid, datefrom="", dateto=""):
+    """
+    Output the list of transactions for an account.
+    """
+    d31 = datetime.timedelta(days = 31)
+    if dateto == "": 
+        dto = transactions.toUnixDate(datetime.datetime.today() + d31)
+        dateto = transactions.pythonToDisplayDate(datetime.datetime.today() + d31)
+    else:
+        dto = transactions.toUnixDate(transactions.displayToPythonDate(dateto))
+    if datefrom == "": 
+        dfrom = transactions.toUnixDate(datetime.datetime.today() - d31)
+        datefrom = transactions.pythonToDisplayDate(datetime.datetime.today() - d31)
+    else:
+        dfrom = transactions.toUnixDate(transactions.displayToPythonDate(data.datefrom))
+    trx = transactions.getTransactions(accountid, dfrom, dto)
+    print("Transactions - %s (%s): %s to %s" % (accounts.getAccountById(accountid).code, accountid, datefrom, dateto))
+    print("")
+    header = [ "Date", "R", "V", "Description", "Account", "Deposit", "Withdrawal", "Balance" ]
+    data = [ header ]
+    displayedToday = False
+    for t in trx:
+        outputdate = transactions.pythonToDisplayDate(t.date)
+        outputreconciled = t.reconciled == 1 and "R" or ""
+        outputvat = t.vat == 1 and "V" or ""
+        outputwithdrawal = ""
+        outputdeposit = ""
+        if t.deposit > 0:
+            outputdeposit = currency_out(t.deposit)
+        if t.withdrawal > 0:
+            outputwithdrawal = currency_out(t.withdrawal)
+        outputbalance = currency_out(t.balance)
+        if not displayedToday and t.date > datetime.date.today():
+            displayedToday = True
+            data.append([ "--", "--", "--", "--", "--", "--", "--", "--" ])
+            pass # TODO: display horizontal bar
+        # highlight bad transactions where source/dest are the same
+        outputotheraccount = "%s (%s)" % (t.otheraccountcode, t.otheraccountid)
+        if t.otheraccountid == int(accountid):
+            outputotheraccount = "<--> %s" % outputotheraccount
+        data.append([ outputdate, outputreconciled, outputvat, t.description, outputotheraccount, outputdeposit,
+            outputwithdrawal, outputbalance ])
+    print(ascii_table(data))
 
 if len(sys.argv) == 1:
     show_accounts()
 
 if len(sys.argv) == 2 and sys.argv[1] == "help":
     print("Usage:")
+    print("   cli [no args]")
+    print("   cli trx <accountid>")
+    print("   cli trx <accountid> 2022-05-01 2022-06-01")
 
+if len(sys.argv) == 3 and sys.argv[1] == "trx":
+    show_trx(sys.argv[2])
+
+if len(sys.argv) == 5 and sys.argv[1] == "trx":
+    show_trx(sys.argv[2], sys.argv[3], sys.argv[4])
 
