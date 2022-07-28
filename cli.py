@@ -110,7 +110,7 @@ def show_trx(accountid, datefrom="", dateto=""):
         dfrom = transactions.toUnixDate(datetime.datetime.today() - d31)
         datefrom = transactions.pythonToDisplayDate(datetime.datetime.today() - d31)
     else:
-        dfrom = transactions.toUnixDate(transactions.displayToPythonDate(data.datefrom))
+        dfrom = transactions.toUnixDate(transactions.displayToPythonDate(datefrom))
     trx = transactions.getTransactions(accountid, dfrom, dto)
     print("Transactions - %s (%s): %s to %s" % (accounts.getAccountById(accountid).code, accountid, datefrom, dateto))
     print("")
@@ -146,12 +146,12 @@ if len(sys.argv) == 1:
 if len(sys.argv) == 2 and sys.argv[1] == "help":
     print("Usage:")
     print("   cli [no args]")
-    print("   cli trx <accountid>")
-    print("   cli trx <accountid> 2022-05-01 2022-06-01")
+    print("   cli show <accountid>")
+    print("   cli show <accountid> 01/02/2022 31/03/2022")
 
-if len(sys.argv) == 3 and sys.argv[1] == "trx":
+if len(sys.argv) == 3 and sys.argv[1] == "show":
     show_trx(sys.argv[2])
 
-if len(sys.argv) == 5 and sys.argv[1] == "trx":
+if len(sys.argv) == 5 and sys.argv[1] == "show":
     show_trx(sys.argv[2], sys.argv[3], sys.argv[4])
 
