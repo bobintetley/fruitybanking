@@ -15,6 +15,10 @@ def getHTMLHeader(title):
             <title>FruityBanking - %s</title>
             <link rel="stylesheet" href="static/style.css" />
             <link type="text/css" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/themes/smoothness/jquery-ui.css" rel="stylesheet" />
+            <link rel="shortcut icon" href="static/icon-16.png" />
+            <link rel="icon" href="static/icon-16.png" sizes="16x16" />
+            <link rel="icon" href="static/icon-32.png" sizes="32x32" />
+            <link rel="icon" href="static/icon-48.png" sizes="48x48" />
             <script type="text/javascript">
             SHOW_VAT = %s;
             </script>
